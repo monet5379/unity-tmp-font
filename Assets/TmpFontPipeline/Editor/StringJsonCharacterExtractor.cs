@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using TmpFontPipeline;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,26 +13,10 @@ namespace TmpFontPipeline.Editor
     {
         public const string DefaultJsonSearchPath = "Assets/Demo/SampleData";
         public const string DefaultOutputPath = "Assets/Demo/Generated";
-        public const string EuropeanOutputBaseName = "unique_chars_European";
-        public const string DialogueOutputSuffix = "_StringDialogue";
-        public const string MandatoryGlyph = "▶";
 
-        public static readonly string[] CjkLanguageFieldNames =
-        {
-            "Korean",
-            "SimplifiedChinese",
-            "TraditionalChinese",
-            "Japanese",
-        };
-
-        public static readonly string[] EuropeanLanguageFieldNames =
-        {
-            "English",
-            "French",
-            "German",
-            "Italian",
-            "Spanish",
-        };
+        public static readonly string[] CjkLanguageFieldNames = FontAtlasFileNames.CjkLanguageFieldNames;
+        public static readonly string[] EuropeanLanguageFieldNames = FontAtlasFileNames.EuropeanLanguageFieldNames;
+        public static readonly string[] AllLanguageFieldNames = FontAtlasFileNames.AllLanguageFieldNames;
 
         // String*.json을 스캔해 언어 버킷별 unique_chars_*.txt를 생성합니다.
         public static void Extract(
@@ -57,7 +42,6 @@ namespace TmpFontPipeline.Editor
 
             FontExtractionBucket defaultBucket = CreateExtractionBucket();
             FontExtractionBucket dialogueBucket = CreateExtractionBucket();
-            var europeanCodePoints = new HashSet<int>();
             var dialogueSourceFiles = new List<string>();
 
             for (int i = 0; i < jsonFiles.Length; i++)
@@ -68,11 +52,11 @@ namespace TmpFontPipeline.Editor
                 if (IsDialogueJsonFile(fileName))
                 {
                     dialogueSourceFiles.Add(fileName);
-                    CollectCodePointsFromJsonFile(filePath, dialogueBucket, europeanCodePoints, parserMode);
+                    CollectCodePointsFromJsonFile(filePath, dialogueBucket, parserMode);
                 }
                 else
                 {
-                    CollectCodePointsFromJsonFile(filePath, defaultBucket, europeanCodePoints, parserMode);
+                    CollectCodePointsFromJsonFile(filePath, defaultBucket, parserMode);
                 }
             }
 
@@ -87,15 +71,8 @@ namespace TmpFontPipeline.Editor
             if (dialogueBucket.ParsedFileCount > 0)
             {
                 string dialogueLabel = $"StringDialogue ({string.Join(", ", dialogueSourceFiles.OrderBy(name => name))})";
-                WriteExtractionBucket(outputDir, dialogueBucket, DialogueOutputSuffix, dialogueLabel, summary);
+                WriteExtractionBucket(outputDir, dialogueBucket, FontAtlasFileNames.DialogueOutputSuffix, dialogueLabel, summary);
             }
-
-            string europeanOutputPath = WriteCodePointsFile(
-                outputDir,
-                $"{EuropeanOutputBaseName}.txt",
-                europeanCodePoints);
-            _ = summary.AppendLine(
-                $"European (EN+FR+DE+IT+ES, all sources): {europeanCodePoints.Count} chars -> {ToAssetPath(europeanOutputPath)}");
 
             AssetDatabase.Refresh();
             Debug.Log(summary.ToString());
@@ -114,9 +91,9 @@ namespace TmpFontPipeline.Editor
                 LanguageCodePoints = new Dictionary<string, HashSet<int>>(),
             };
 
-            for (int i = 0; i < CjkLanguageFieldNames.Length; i++)
+            for (int i = 0; i < AllLanguageFieldNames.Length; i++)
             {
-                bucket.LanguageCodePoints[CjkLanguageFieldNames[i]] = new HashSet<int>();
+                bucket.LanguageCodePoints[AllLanguageFieldNames[i]] = new HashSet<int>();
             }
 
             return bucket;
@@ -125,7 +102,6 @@ namespace TmpFontPipeline.Editor
         private static void CollectCodePointsFromJsonFile(
             string filePath,
             FontExtractionBucket bucket,
-            HashSet<int> europeanCodePoints,
             JsonParserMode parserMode)
         {
             string json = File.ReadAllText(filePath, Encoding.UTF8);
@@ -152,24 +128,18 @@ namespace TmpFontPipeline.Editor
                 }
 
                 bucket.ParsedEntryCount++;
-                CollectCodePointsFromEntry(entry, bucket, europeanCodePoints);
+                CollectCodePointsFromEntry(entry, bucket);
             }
         }
 
         private static void CollectCodePointsFromEntry(
             IStringTableRow entry,
-            FontExtractionBucket bucket,
-            HashSet<int> europeanCodePoints)
+            FontExtractionBucket bucket)
         {
-            for (int i = 0; i < CjkLanguageFieldNames.Length; i++)
+            for (int i = 0; i < AllLanguageFieldNames.Length; i++)
             {
-                string fieldName = CjkLanguageFieldNames[i];
+                string fieldName = AllLanguageFieldNames[i];
                 CollectCodePointsFromField(entry, fieldName, bucket.LanguageCodePoints[fieldName]);
-            }
-
-            for (int i = 0; i < EuropeanLanguageFieldNames.Length; i++)
-            {
-                CollectCodePointsFromField(entry, EuropeanLanguageFieldNames[i], europeanCodePoints);
             }
         }
 
@@ -194,15 +164,13 @@ namespace TmpFontPipeline.Editor
         {
             _ = summary.AppendLine($"[{logLabel}] {bucket.ParsedFileCount} files, {bucket.ParsedEntryCount} entries");
 
-            for (int i = 0; i < CjkLanguageFieldNames.Length; i++)
+            for (int i = 0; i < AllLanguageFieldNames.Length; i++)
             {
-                string fieldName = CjkLanguageFieldNames[i];
-                bool includeMandatoryGlyphs = fileNameSuffix != DialogueOutputSuffix;
+                string fieldName = AllLanguageFieldNames[i];
                 string outputFile = WriteCodePointsFile(
                     outputDir,
-                    $"unique_chars_{fieldName}{fileNameSuffix}.txt",
-                    bucket.LanguageCodePoints[fieldName],
-                    includeMandatoryGlyphs);
+                    $"{FontAtlasFileNames.OutputPrefix}{fieldName}{fileNameSuffix}.txt",
+                    bucket.LanguageCodePoints[fieldName]);
                 _ = summary.AppendLine(
                     $"  {fieldName}: {bucket.LanguageCodePoints[fieldName].Count} chars -> {ToAssetPath(outputFile)}");
             }
@@ -211,14 +179,8 @@ namespace TmpFontPipeline.Editor
         private static string WriteCodePointsFile(
             string outputDir,
             string fileName,
-            HashSet<int> codePoints,
-            bool includeMandatoryGlyphs = true)
+            HashSet<int> codePoints)
         {
-            if (includeMandatoryGlyphs)
-            {
-                StringTextSanitizer.AddCodePoints(codePoints, MandatoryGlyph);
-            }
-
             string outputFilePath = Path.Combine(outputDir, fileName);
             string content = CodePointsToString(codePoints);
             File.WriteAllText(outputFilePath, content, new UTF8Encoding(false));
