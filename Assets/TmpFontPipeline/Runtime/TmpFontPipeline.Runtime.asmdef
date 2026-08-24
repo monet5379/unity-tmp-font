@@ -2,7 +2,8 @@
     "name": "TmpFontPipeline.Runtime",
     "rootNamespace": "TmpFontPipeline",
     "references": [
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

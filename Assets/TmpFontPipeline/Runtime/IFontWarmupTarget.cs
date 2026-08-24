@@ -8,7 +8,9 @@ namespace TmpFontPipeline
     {
         IReadOnlyList<TMP_FontAsset> GetFontsForWarmup(string languageId);
 
-        string GetSampleText(string languageId);
+        TMP_FontAsset GetFontForWarmup(string languageId, FontUsageRole role);
+
+        string GetSampleText(string languageId, FontUsageRole role);
 
         void PreloadSpriteAssets(string languageId);
     }
