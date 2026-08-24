@@ -1,0 +1,26 @@
+[
+  {
+    "Key": "dlg_intro",
+    "Korean": "어서 오세요, 모험가.",
+    "English": "Welcome, adventurer.",
+    "French": "Bienvenue, aventurier.",
+    "German": "Willkommen, Abenteurer.",
+    "Italian": "Benvenuto, avventuriero.",
+    "Spanish": "Bienvenido, aventurero.",
+    "Japanese": "ようこそ、冒険者。",
+    "SimplifiedChinese": "欢迎，冒险者。",
+    "TraditionalChinese": "歡迎，冒險者。"
+  },
+  {
+    "Key": "dlg_boss",
+    "Korean": "드래곤이 [BOSS_NAME]을(를) 부르고 있다!",
+    "English": "The dragon calls for [BOSS_NAME]!",
+    "French": "Le dragon appelle [BOSS_NAME] !",
+    "German": "Der Drache ruft [BOSS_NAME]!",
+    "Italian": "Il drago chiama [BOSS_NAME]!",
+    "Spanish": "¡El dragón llama a [BOSS_NAME]!",
+    "Japanese": "ドラゴンが[BOSS_NAME]を呼んでいる！",
+    "SimplifiedChinese": "龙在呼唤[BOSS_NAME]！",
+    "TraditionalChinese": "龍在呼喚[BOSS_NAME]！"
+  }
+]
