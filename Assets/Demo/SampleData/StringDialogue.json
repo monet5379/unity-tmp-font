@@ -13,14 +13,14 @@
   },
   {
     "Key": "dlg_boss",
-    "Korean": "드래곤이 [BOSS_NAME]을(를) 부르고 있다!",
-    "English": "The dragon calls for [BOSS_NAME]!",
-    "French": "Le dragon appelle [BOSS_NAME] !",
-    "German": "Der Drache ruft [BOSS_NAME]!",
-    "Italian": "Il drago chiama [BOSS_NAME]!",
-    "Spanish": "¡El dragón llama a [BOSS_NAME]!",
-    "Japanese": "ドラゴンが[BOSS_NAME]を呼んでいる！",
-    "SimplifiedChinese": "龙在呼唤[BOSS_NAME]！",
-    "TraditionalChinese": "龍在呼喚[BOSS_NAME]！"
+    "Korean": "드래곤이 모험가를 부르고 있다!",
+    "English": "The dragon calls for the adventurer!",
+    "French": "Le dragon appelle l'aventurier !",
+    "German": "Der Drache ruft den Abenteurer!",
+    "Italian": "Il drago chiama l'avventuriero!",
+    "Spanish": "¡El dragón llama al aventurero!",
+    "Japanese": "ドラゴンが冒険者を呼んでいる！",
+    "SimplifiedChinese": "龙在呼唤冒险者！",
+    "TraditionalChinese": "龍在呼喚冒險者！"
   }
 ]
