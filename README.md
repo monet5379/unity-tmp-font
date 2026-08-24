@@ -3,7 +3,7 @@
 Editor character extraction from localization JSON and runtime TMP font warmup. Moves Dynamic atlas growth and first-draw spikes out of gameplay.
 
 **Phase 2a (done):** Editor extract — `String*.json` → `unique_chars_*.txt`.  
-**Phase 2d (done):** `FontAtlasApplyProfile` + Apply menu — Generated txt → Static SDF atlas.  
+**Phase 2d (done):** `FontAtlasApplyProfile` + Editor Window Apply — Generated txt → Static SDF atlas.  
 **Phase 2b/2c (next):** Runtime warmup and Demo scene wiring.
 
 ## Install
@@ -26,26 +26,28 @@ After opening the project in Unity, import **TMP Essentials** once (Window → T
 
 ## Usage
 
-### Editor — extract (Phase 2a)
+### Editor Window (Phase 2a + 2d)
 
-Menu: **Tmp Font Pipeline → Extract Unique Characters (JSON)**
+Open: **Tmp Font Pipeline → Open Window**
 
-JSON parser (explicit, no auto-fallback):
+The window has three top tabs: **Extract**, **Apply**, **Help**. Remaining menus: **Open Window**, **Create Demo Assets**.
 
-- **Tmp Font Pipeline → JSON Parser → JsonUtility** (default) — fixed language columns; Demo `SampleData` works as-is
-- **Tmp Font Pipeline → JSON Parser → Newtonsoft** — irregular / sheet-exported JSON
-
-1. Input: `String*.json` under `Assets/Demo/SampleData`
-2. Output: `unique_chars_*.txt` under `Assets/Demo/Generated`
-
-### Editor — apply to Static atlas (Phase 2d)
-
-1. Create a **Font Atlas Apply Profile** (`Assets → Create → Tmp Font Pipeline → Font Atlas Apply Profile`) mapping each **Bucket × Role** to a Static `TMP_FontAsset`, or run **Tmp Font Pipeline → Font Atlas Apply Profile → Create Demo Assets** in this repo.
-   - If you already had old profiles (before European split), run this menu again to resync entries.
-2. (Optional) **Tmp Font Pipeline → Font Atlas Apply Profile → Select Active Profile...** — defaults to `Assets/Demo/FontAtlasApplyProfile.asset` when present.
-3. Run **Extract Unique Characters (JSON)**, then **Apply Generated Characters to Font Assets**.
+1. **Extract** — set JSON / output folders, choose parser (`JsonUtility` default, or `Newtonsoft` for irregular JSON), then **Extract Unique Characters**.
+   - Input default: `Assets/Demo/SampleData` (`String*.json`)
+   - Output default: `Assets/Demo/Generated` (`unique_chars_*.txt`)
+2. **Apply** — assign a **Font Atlas Apply Profile** (or **Use Demo Profile**), toggle **Enabled** per entry (or **Enable All** / **Disable All**), then **Apply Generated Characters**.
+   - **Ping** highlights the profile asset in the Project window.
    - Applier sets target atlas size to `2048x2048` before baking.
-4. Confirm Atlas Population Mode = **Static** on target fonts.
+3. Confirm Atlas Population Mode = **Static** on target fonts.
+
+**Help** tab — demo seed:
+
+| Demo profile | Button | Behavior |
+|--------------|--------|----------|
+| Missing | **Create Demo Assets** | Creates `FontAtlasApplyProfile` + `FontRoleCatalog` under `Assets/Demo`, seeds entries, sets active profile |
+| Present | **Resync Demo Assets** | Reloads the same assets and **overwrites** entries from demo bindings (`Enabled` → all true; manual edits reset) |
+
+Same action is also available from **Tmp Font Pipeline → Font Atlas Apply Profile → Create Demo Assets**. Re-run / resync if an older profile predates the European language split.
 
 Runtime font lookup (Demo / your game): **Font Role Catalog** (`Assets → Create → Tmp Font Pipeline → Font Role Catalog`) — `LanguageId` + `Ui` / `Dialogue` → `TMP_FontAsset`.
 
@@ -102,7 +104,7 @@ Write-up:
 
 - **Phase 1:** folder layout, asmdefs, API stubs, sample `String*.json`, Demo script shells.
 - **Phase 2a (done):** `StringTextSanitizer` + `StringJsonCharacterExtractor` — language buckets (CJK + EN/FR/DE/IT/ES), Dialogue split. JSON parser selectable: default **JsonUtility**, optional **Newtonsoft** (EditorPrefs, no auto-fallback).
-- **Phase 2d (done):** `FontAtlasApplyProfile`, `FontRoleCatalog`, `FontAtlasApplier` — Bucket×Role → Static SDF apply menu; `FontAtlasFileNames` SSOT shared with extractor.
+- **Phase 2d (done):** `FontAtlasApplyProfile`, `FontRoleCatalog`, `FontAtlasApplier`, `TmpFontPipelineWindow` (Extract / Apply / Help tabs) — Bucket×Role → Static SDF via Editor Window; `FontAtlasFileNames` SSOT shared with extractor.
 - **Phase 2b (next):** `FontWarmupService` — hidden canvas, one font per frame, supersede, optional sprite preload hook.
 - **Phase 2c (next):** Demo scene wiring, `FontRoleCatalog`, README screenshots under `docs/images/`.
 
@@ -117,7 +119,7 @@ Write-up:
 로컬라이즈 JSON에서 고유 글자를 추출하고, 런타임 TMP 폰트 워밍업으로 Dynamic atlas 성장·첫 draw 스파이크를 플레이 밖으로 옮기는 파이프라인입니다.
 
 **Phase 2a (완료):** Editor 추출 — `String*.json` → `unique_chars_*.txt`.  
-**Phase 2d (완료):** `FontAtlasApplyProfile` + Apply 메뉴 — Generated txt → Static SDF atlas.  
+**Phase 2d (완료):** `FontAtlasApplyProfile` + Editor Window Apply — Generated txt → Static SDF atlas.  
 **Phase 2b/2c (다음):** Runtime 워밍업·Demo 씬 연결.
 
 ## 설치
@@ -140,26 +142,28 @@ Unity에서 프로젝트를 연 뒤 **TMP Essentials**를 한 번 import합니�
 
 ## 사용
 
-### Editor — 추출 (Phase 2a)
+### Editor Window (Phase 2a + 2d)
 
-메뉴: **Tmp Font Pipeline → Extract Unique Characters (JSON)**
+열기: **Tmp Font Pipeline → Open Window**
 
-JSON 파서 (명시 선택, 자동 fallback 없음):
+상단 탭 3개: **Extract**, **Apply**, **Help**. 남는 메뉴: **Open Window**, **Create Demo Assets**.
 
-- **Tmp Font Pipeline → JSON Parser → JsonUtility** (기본) — 고정 언어 컬럼; Demo `SampleData` 그대로 사용
-- **Tmp Font Pipeline → JSON Parser → Newtonsoft** — 불규칙·시트 export JSON
-
-1. 입력: `Assets/Demo/SampleData` 아래 `String*.json`
-2. 출력: `Assets/Demo/Generated` 아래 `unique_chars_*.txt`
-
-### Editor — Static atlas 적용 (Phase 2d)
-
-1. **Font Atlas Apply Profile** 생성 (`Assets → Create → Tmp Font Pipeline → Font Atlas Apply Profile`) — Bucket×Role별 Static `TMP_FontAsset` 매핑. 이 레포에서는 **Tmp Font Pipeline → Font Atlas Apply Profile → Create Demo Assets** 실행.
-   - 유럽 분리 이전 프로필이 있으면 이 메뉴를 다시 실행해 엔트리를 동기화합니다.
-2. (선택) **Select Active Profile...** — 미설정 시 `Assets/Demo/FontAtlasApplyProfile.asset` 사용.
-3. **Extract Unique Characters (JSON)** 후 **Apply Generated Characters to Font Assets** 실행.
+1. **Extract** — JSON/출력 폴더·파서(`JsonUtility` 기본, 불규칙 JSON은 `Newtonsoft`) 설정 후 **Extract Unique Characters**.
+   - 입력 기본: `Assets/Demo/SampleData` (`String*.json`)
+   - 출력 기본: `Assets/Demo/Generated` (`unique_chars_*.txt`)
+2. **Apply** — **Font Atlas Apply Profile** 지정(또는 **Use Demo Profile**), 엔트리 **Enabled** 토글(또는 **Enable All** / **Disable All**) 후 **Apply Generated Characters**.
+   - **Ping**은 Project 창에서 프로필 에셋을 하이라이트합니다.
    - Apply 시 대상 atlas 크기를 `2048x2048`로 맞춘 뒤 bake합니다.
-4. 대상 Font Asset의 Atlas Population Mode = **Static** 확인.
+3. 대상 Font Asset의 Atlas Population Mode = **Static** 확인.
+
+**Help** 탭 — Demo 시드:
+
+| Demo 프로필 | 버튼 | 동작 |
+|-------------|------|------|
+| 없음 | **Create Demo Assets** | `Assets/Demo`에 `FontAtlasApplyProfile` + `FontRoleCatalog` 생성·시드, Active Profile 설정 |
+| 있음 | **Resync Demo Assets** | 동일 에셋을 로드한 뒤 demo 바인딩으로 **덮어씀** (`Enabled` 전부 true, 수동 편집 초기) |
+
+메뉴 **Tmp Font Pipeline → Font Atlas Apply Profile → Create Demo Assets**와 동일합니다. 유럽 분리 이전 프로필이면 다시 실행(재시드)하세요.
 
 런타임 폰트 조회(Demo·게임): **Font Role Catalog** — `LanguageId` + `Ui` / `Dialogue` → `TMP_FontAsset`.
 
@@ -207,7 +211,7 @@ public sealed class MyFontWarmupTarget : IFontWarmupTarget
 
 - **Phase 1:** 폴더·asmdef·API 스텁·샘플 `String*.json`·Demo 스크립트 껍데기.
 - **Phase 2a (완료):** `StringTextSanitizer` + `StringJsonCharacterExtractor` — 언어 버킷(CJK + EN/FR/DE/IT/ES), Dialogue 분리. JSON 파서 선택: 기본 **JsonUtility**, 선택 **Newtonsoft** (EditorPrefs, 자동 fallback 없음).
-- **Phase 2d (완료):** `FontAtlasApplyProfile`, `FontRoleCatalog`, `FontAtlasApplier` — Bucket×Role → Static SDF Apply 메뉴; `FontAtlasFileNames` SSOT를 extractor와 공유.
+- **Phase 2d (완료):** `FontAtlasApplyProfile`, `FontRoleCatalog`, `FontAtlasApplier`, `TmpFontPipelineWindow` (Extract / Apply / Help 탭) — Bucket×Role → Static SDF를 Editor Window로 적용; `FontAtlasFileNames` SSOT를 extractor와 공유.
 - **Phase 2b (다음):** `FontWarmupService` — 숨김 캔버스, font 1개당 1프레임, supersede, sprite preload 훅.
 - **Phase 2c (다음):** Demo 씬 연결, `FontRoleCatalog`, `docs/images/` README 스크린샷.
 
