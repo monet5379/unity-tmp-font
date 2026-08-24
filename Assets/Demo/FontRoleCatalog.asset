@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0f28a90255d0124b80af12d0be3cdbd, type: 3}
+  m_Name: FontRoleCatalog
+  m_EditorClassIdentifier: TmpFontPipeline.Runtime::TmpFontPipeline.FontRoleCatalog
+  _languages:
+  - LanguageId: KO
+    UiFont: {fileID: 11400000, guid: 86ae5b9d9adb42e42a757091cab650e0, type: 2}
+    DialogueFont: {fileID: 11400000, guid: ecc55e1dfd6205a41a319fe442fc806c, type: 2}
+  - LanguageId: JP
+    UiFont: {fileID: 11400000, guid: 40123500ce12d8c4b8663163b8961184, type: 2}
+    DialogueFont: {fileID: 11400000, guid: fb46e416aba07cd45be16bdb29bff3c7, type: 2}
+  - LanguageId: SC
+    UiFont: {fileID: 11400000, guid: d910dd0aa0fdcf7439d9dacfb428911e, type: 2}
+    DialogueFont: {fileID: 11400000, guid: 9f0db502811c2d34e9da15a452cbdd18, type: 2}
+  - LanguageId: TC
+    UiFont: {fileID: 11400000, guid: 753d0b19b662e4e49913ae6d586935e2, type: 2}
+    DialogueFont: {fileID: 11400000, guid: 0974c481de71d5c4385dd2015656d394, type: 2}
+  - LanguageId: EN
+    UiFont: {fileID: 11400000, guid: 18a67edda18d76644b21e37c817f9cfa, type: 2}
+    DialogueFont: {fileID: 11400000, guid: 08584b2aa1a5c5847b3c860166bb7c20, type: 2}
+  - LanguageId: FR
+    UiFont: {fileID: 11400000, guid: 8438fc11e2be25748b56ad3452c486ca, type: 2}
+    DialogueFont: {fileID: 11400000, guid: be799bbc807f4be4e956f2ebc792bb71, type: 2}
+  - LanguageId: DE
+    UiFont: {fileID: 11400000, guid: 4584de38bd1971a40ade4333f1e94310, type: 2}
+    DialogueFont: {fileID: 11400000, guid: 3bf52ac63a0cb4b4c8bdae3520010fe0, type: 2}
+  - LanguageId: IT
+    UiFont: {fileID: 11400000, guid: f81ec20286b900e40b5ceceae69e547b, type: 2}
+    DialogueFont: {fileID: 11400000, guid: 21726c5666ed9994c950bf6a64240a45, type: 2}
+  - LanguageId: ES
+    UiFont: {fileID: 11400000, guid: bf575772a3d8cc944a803639755d3a81, type: 2}
+    DialogueFont: {fileID: 11400000, guid: ef45958e49a75da419ff7da9684c047a, type: 2}

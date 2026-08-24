@@ -1,3 +1,4 @@
+using TmpFontPipeline;
 using UnityEngine;
 
 namespace TmpFontPipeline.Demo
@@ -5,7 +6,7 @@ namespace TmpFontPipeline.Demo
     // Phase 2: 언어 변경 → input block → warmup → UI refresh → unblock.
     public sealed class DemoLanguageSwitcher : MonoBehaviour
     {
-        [SerializeField] private DemoFontSet _fontSet;
+        [SerializeField] private FontRoleCatalog _fontCatalog;
 
         public void SwitchLanguage(string languageId)
         {
