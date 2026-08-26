@@ -13,6 +13,10 @@ Extract unique characters from localization JSON, then warm up runtime TMP fonts
 
 Copy only **`Assets/TmpFontPipeline`** into a game. `Assets/Demo` is reference-only.
 
+![Pipeline](docs/images/pipeline.png)
+
+Source: [`docs/diagrams/pipeline.mmd`](docs/diagrams/pipeline.mmd)
+
 ![SampleScene — EN (Ui + Dialogue, language buttons, key picker)](docs/images/scene-en.png)
 
 ## Install

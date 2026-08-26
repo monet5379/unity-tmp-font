@@ -1,0 +1,21 @@
+%%{init: {'theme':'dark'}}%%
+flowchart TD
+  subgraph EDITOR["EDITOR — build-time"]
+    A["String*.json"] --> B["Sanitize"]
+    B --> C["Extract"]
+    C --> D["Ui bucket"]
+    C --> E["Dialogue bucket"]
+    D --> F["Static Apply"]
+    E --> F
+  end
+
+  subgraph RUNTIME["RUNTIME"]
+    G["FontRoleCatalog"] --> H["FontWarmupService"]
+    H --> I["First draw outside gameplay"]
+  end
+
+  F --> G
+
+  NOTE["Charset SSOT ≠ warmup sample<br/>Extract → Static table is SSOT<br/>Warmup = when, not every glyph"]
+  F ~~~ NOTE
+  I ~~~ NOTE

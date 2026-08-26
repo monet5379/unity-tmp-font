@@ -13,6 +13,10 @@
 
 게임에 넣을 패키지는 **`Assets/TmpFontPipeline`**만 복사해요. `Assets/Demo`는 참고용이에요.
 
+![파이프라인](docs/images/pipeline.ko.png)
+
+정본: [`docs/diagrams/pipeline.ko.mmd`](docs/diagrams/pipeline.ko.mmd)
+
 ![SampleScene — EN (Ui + Dialogue, 언어 버튼, key picker)](docs/images/scene-en.png)
 
 ## 설치
