@@ -33,7 +33,9 @@ TMP Font Pipeline은 `Packages/com.monet5379.tmp-font-pipeline/` UPM 패키지�
 
 | 트리 | asmdef | 역할 |
 | --- | --- | --- |
-| `Packages/.../Runtime/` | `TmpFontPipeline.Runtime` | `FontWarmupService`, `IFontWarmupTarget`, `FontRoleCatalog`, `FontAtlasApplyProfile`, `FontWarmupSampleText` |
+| `Packages/.../Runtime/` | `TmpFontPipeline.Runtime` | 루트 asmdef만. 소스는 `Atlas/` · `Warmup/` |
+| `Packages/.../Runtime/Atlas/` | (동일) | `FontAtlasApplyProfile`, `FontAtlasBucket`, `FontUsageRole`, `FontAtlasFileNames` — Extract→Apply 계약 |
+| `Packages/.../Runtime/Warmup/` | (동일) | `FontWarmupService`, `IFontWarmupTarget`, `FontRoleCatalog`, `FontWarmupSampleText` |
 | `Packages/.../Editor/` | `TmpFontPipeline.Editor` | `TmpFontPipelineWindow`, Extract/Apply, JSON 파서, `FontAtlasApplier` |
 | `Packages/.../Samples~/Demo/` | `TmpFontPipeline.Sample.Demo` | 예시 JSON · `SampleFontWarmupTarget` — Package Manager **Import** |
 | `Assets/Demo/` | `TmpFontPipeline.Demo` · `TmpFontPipeline.Demo.Editor` | `SampleScene`, Noto SDF, Generated, `DemoFontProfileBootstrap` — **비설치** · 이 repo에서는 샘플 **Import 안 함** |
@@ -117,8 +119,8 @@ flowchart LR
 | 변경 | 확인할 경로 |
 | --- | --- |
 | Extract 버킷·sanitize·mandatory glyph·European mode | `StringJsonCharacterExtractor`, `EuropeanExtractSettings`, `FontAtlasMandatoryCharacters`, `StringTextSanitizer`, README 출력 표 |
-| Apply bake 규칙 | `FontAtlasApplier`, `FontAtlasApplyDuplicateWarnings`, Window Apply 탭 |
-| Warmup 스케줄 | `FontWarmupService`, `IFontWarmupTarget` |
+| Apply bake 규칙 · Apply SO·파일명 계약 | `Runtime/Atlas/`, `FontAtlasApplier`, `FontAtlasApplyDuplicateWarnings`, Window Apply 탭 |
+| Warmup 스케줄 | `Runtime/Warmup/`, `FontWarmupService`, `IFontWarmupTarget` |
 | Demo 시드 | `Assets/Demo/Editor/DemoFontProfileBootstrap` (패키지 밖) |
 | Samples | `Samples~/Demo` JSON·`SampleFontWarmupTarget` |
 | public API · asmdef 이름 | README 불변조건 · 이 문서 표 |
