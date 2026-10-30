@@ -16,7 +16,7 @@
 2. 아래 URL 입력 (태그는 릴리스 버전에 맞게 변경):
 
 ```text
-https://github.com/monet5379/unity-tmp-font.git?path=/Packages/com.monet5379.tmp-font-pipeline#v0.1.0
+https://github.com/monet5379/unity-tmp-font.git?path=/Packages/com.monet5379.tmp-font-pipeline#v0.1.1
 ```
 
 ### 로컬 임베디드

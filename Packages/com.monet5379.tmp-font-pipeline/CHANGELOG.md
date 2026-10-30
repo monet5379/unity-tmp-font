@@ -4,10 +4,16 @@
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-30
+
 ### Fixed
 
 - 빈 `FontAtlasApplyProfile` Generated Folder가 Windows에서 드라이브 루트 txt를 가리키던 문제 — 경로 해석·Apply 조기 실패·창 버튼 비활성.
 - Extract/Apply 실패 후에도 창이 완료로 표시되던 문제 — `bool` 반환·실패 메시지·JSON 폴더에 `String*.json` 없으면 Extract 비활성.
+
+### Notes
+
+- Git URL pin: `https://github.com/monet5379/unity-tmp-font.git?path=/Packages/com.monet5379.tmp-font-pipeline#v0.1.1`
 
 ## [0.1.0] - 2026-10-30
 
