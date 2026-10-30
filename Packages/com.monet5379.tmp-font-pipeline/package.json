@@ -16,7 +16,7 @@
     },
     {
       "displayName": "Demo (Noto + Baked Atlas)",
-      "description": "슬림 Demo와 동일 JSON + Noto Static SDF·Generated txt·Apply 프로필·FontRoleCatalog. Import 후 메뉴 TMP 폰트 파이프라인 → 샘플 → Noto 데모 경로 연결.",
+      "description": "슬림 Demo와 동일 JSON + Noto Static SDF·Generated txt·Apply 프로필·FontRoleCatalog. Import 후 Tools → TMP Font Pipeline → 샘플 → Noto 데모 경로 연결.",
       "path": "Samples~/DemoWithFonts"
     }
   ],

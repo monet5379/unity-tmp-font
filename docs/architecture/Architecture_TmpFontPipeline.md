@@ -21,7 +21,7 @@ TMP Font Pipeline은 `Packages/com.monet5379.tmp-font-pipeline/` UPM 패키지�
 - **Warmup:** 역할별 sample text로 숨김 draw — **전 glyph 보장 아님**
 - UPM `Samples~/Demo` — JSON · `IFontWarmupTarget` (슬림 Import)
 - UPM `Samples~/DemoWithFonts` — Noto SDF · Generated · Apply/Catalog · 샘플 전용 경로 연결 메뉴
-- 이 repo `Assets/Project` · `Assets/Editor` · `Assets/Scenes` — Demo 스크립트·씬·시드; JSON·Static 폰트·Generated는 `Assets/Addressables` · `Assets/Project/Font` (**설치·복사 대상 아님**)
+- 이 repo `Assets/Project` · `Assets/Scenes` — Demo 스크립트·씬; JSON·Static 폰트·Generated·Apply/Catalog·EditorPrefs 시드는 `Assets/Addressables` · `Assets/Project/Font` · `Assets/Project/Editor/ProjectExtractPathDefaults` (**설치·복사 대상 아님**)
 
 ### 제외 범위 (Out of Scope)
 
@@ -40,7 +40,7 @@ TMP Font Pipeline은 `Packages/com.monet5379.tmp-font-pipeline/` UPM 패키지�
 | `Packages/.../Editor/` | `TmpFontPipeline.Editor` | 루트 asmdef. `UI/` · `Extract/` · `Apply/` (아래 레이아웃) |
 | `Packages/.../Samples~/Demo/` | `TmpFontPipeline.Sample.Demo` | 예시 JSON · `SampleFontWarmupTarget` — Package Manager **Import** (슬림) |
 | `Packages/.../Samples~/DemoWithFonts/` | `TmpFontPipeline.Sample.DemoWithFonts` (+ `.Editor`) | Noto · Generated · Settings · `SampleDemoWithFontsBootstrap` — **Import** (풀 데모 에셋) |
-| `Assets/Project/Scripts/` · `Assets/Editor/` | `TmpFontPipeline.Demo` · `TmpFontPipeline.Demo.Editor` | Demo 런타임 · `DemoFontProfileBootstrap`; JSON·Static SDF는 `Assets/Addressables`, Generated·Apply 프로필은 `Assets/Project/Font` — **비설치** · 샘플 **Import 안 함** |
+| `Assets/Project/Scripts/` · `Assets/Project/Editor/` | `TmpFontPipeline.Demo` · `TmpFontPipeline.Project.Editor` | Demo 런타임 · `ProjectExtractPathDefaults`; JSON·Static SDF는 `Assets/Addressables`, Generated·Apply 프로필·Catalog는 repo 에셋 — **비설치** · 샘플 **Import 안 함** |
 | `Assets/Scenes/` | (씬) | `SampleScene` — Demo Play |
 | `Assets/TextMesh Pro/` | (기본 어셈블리) | 개발 repo TMP Essentials — **패키지 밖** |
 
@@ -65,6 +65,13 @@ Editor/
 ```
 
 네임스페이스는 전부 `TmpFontPipeline.Editor` (하위 폴더와 무관).
+
+**Editor 메뉴 (문서·코드 정본)**
+
+| Unity 경로 | 용도 |
+| --- | --- |
+| **Tools → TMP Font Pipeline → …** | `[MenuItem]` — 파이프라인 창, Noto 샘플 **Noto 데모 경로 연결** |
+| **Assets → Create → TMP 폰트 파이프라인 → …** | `[CreateAssetMenu]` — `FontAtlasApplyProfile`, `FontRoleCatalog` |
 
 ```mermaid
 flowchart LR
@@ -92,7 +99,7 @@ flowchart LR
 
 ### Extract (Editor)
 
-1. **TMP 폰트 파이프라인 → 창 열기 → 추출**에서 JSON 폴더 · 출력 폴더 지정 (`EditorPrefs` persist).
+1. **Tools → TMP Font Pipeline → 창 열기 → 추출**에서 JSON 폴더 · 출력 폴더 지정 (`EditorPrefs` persist). 이 repo는 `ProjectExtractPathDefaults`가 최초 Editor 로드 시 기본 경로·Active Apply 프로필을 시드한다.
 2. **고유 문자 추출** — `String*.json` / `StringDialogue*` 스can, sanitize, 언어·Ui/Dialogue 버킷별 `unique_chars_*.txt` 출력.
 3. 문자셋 **SSOT** = 이 txt → Apply 후 TMP Character Table. Warmup sample text는 SSOT가 아니다.
 
@@ -112,8 +119,8 @@ flowchart LR
 
 | | `Samples~/Demo` | `Samples~/DemoWithFonts` | 이 repo Demo |
 | --- | --- | --- | --- |
-| 목적 | JSON · Warmup 스크립트 | + Noto SDF · Generated · Apply/Catalog | 씬 · `DemoFontProfileBootstrap` |
-| 경로·프로필 | Import 후 사용자 지정 | **Noto 데모 경로 연결** | **데모 에셋 생성** |
+| 목적 | JSON · Warmup 스크립트 | + Noto SDF · Generated · Apply/Catalog | 씬 · 버전 관리 Apply/Catalog |
+| 경로·프로필 | Import 후 사용자 지정 | **Tools → TMP Font Pipeline → 샘플 → Noto 데모 경로 연결** | `ProjectExtractPathDefaults` + repo 에셋 |
 | Extract 예시 | `SampleData` | 동일 JSON · `Generated` 포함 · 유럽어 MergedEuropean txt | `Assets/Addressables/JSON` → `Assets/Project/Font/Generated` |
 | Package Manager Import | 소비자 (슬림) | 소비자 (E2E) | **Import 안 함** ([README NOTE](../../README.md)) |
 
@@ -137,7 +144,7 @@ flowchart LR
 | Extract 버킷·sanitize·mandatory glyph·European mode | `Editor/Extract/`, `Editor/Extract/Json/`, README 출력 표 |
 | Apply bake 규칙 · Apply SO·파일명 계약 | `Runtime/Atlas/`, `Editor/Apply/`, `Editor/UI/` Apply 탭 |
 | Warmup 스케줄 | `Runtime/Warmup/`, `FontWarmupService`, `IFontWarmupTarget` |
-| Demo 시드 (이 repo) | `Assets/Editor/DemoFontProfileBootstrap` |
+| Demo (이 repo) | `Assets/Project/Font/FontAtlasApplyProfile` · `Assets/Addressables/Scriptable/FontRoleCatalog` · `Assets/Project/Editor/ProjectExtractPathDefaults` |
 | Samples 시드 (UPM Import) | `Samples~/DemoWithFonts/Editor/SampleDemoWithFontsBootstrap` |
 | Samples 에셋·JSON | `Samples~/Demo` · `Samples~/DemoWithFonts` |
 | public API · asmdef 이름 | README 불변조건 · 이 문서 표 |

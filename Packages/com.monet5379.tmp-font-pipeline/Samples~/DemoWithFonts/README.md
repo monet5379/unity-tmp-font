@@ -1,6 +1,6 @@
 # Demo (Noto + Baked Atlas) sample
 
-Package Manager에서 **Import**한 뒤, 한 번 **TMP 폰트 파이프라인 → 샘플 → Noto 데모 경로 연결**을 실행하세요. Apply Active Profile·프로필 Generated 폴더·`FontRoleCatalog` 참조가 Import 경로에 맞춰집니다.
+Package Manager에서 **Import**한 뒤, 한 번 **Tools → TMP Font Pipeline → 샘플 → Noto 데모 경로 연결**을 실행하세요. Apply Active Profile·프로필 Generated 폴더·`FontRoleCatalog` 참조가 Import 경로에 맞춰집니다.
 
 ## 포함
 
@@ -14,8 +14,8 @@ Package Manager에서 **Import**한 뒤, 한 번 **TMP 폰트 파이프라인 �
 
 ## Import 후 (권장 순서)
 
-1. **Noto 데모 경로 연결** (위 메뉴)
-2. Extract 창에서 JSON 폴더 = `…/DemoWithFonts/SampleData`, 출력 = `…/DemoWithFonts/Generated` (이미 채워져 있으면 재추출은 JSON 변경 시만)
-3. Apply 탭에서 Active Profile = `…/Settings/FontAtlasApplyProfile` — charset을 다시 bake할 때만 **Generated 문자 적용**
+1. **Tools → TMP Font Pipeline → 샘플 → Noto 데모 경로 연결**
+2. **Tools → TMP Font Pipeline → 창 열기** → **추출** — JSON 폴더 = `…/DemoWithFonts/SampleData`, 출력 = `…/DemoWithFonts/Generated` (이미 채워져 있으면 재추출은 JSON 변경 시만)
+3. 같은 창 **적용** — Active Profile = `…/Settings/FontAtlasApplyProfile` — charset을 다시 bake할 때만 **Generated 문자 적용**
 
 Extract 유럽어 모드는 **MergedEuropean** 권장 (`unique_chars_European*.txt` ↔ Apply `FontAtlasBucket.European`).

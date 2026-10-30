@@ -21,7 +21,7 @@ namespace TmpFontPipeline.Editor
         private string _lastActionMessage = string.Empty;
         private MessageType _lastActionMessageType = MessageType.Info;
 
-        [MenuItem("TMP 폰트 파이프라인/창 열기", priority = 0)]
+        [MenuItem("Tools/TMP Font Pipeline/창 열기", priority = 0)]
         public static void ShowWindow()
         {
             GetWindow<TmpFontPipelineWindow>("TMP 폰트 파이프라인");

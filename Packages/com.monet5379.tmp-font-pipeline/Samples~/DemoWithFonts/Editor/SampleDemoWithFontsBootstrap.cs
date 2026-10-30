@@ -23,7 +23,7 @@ namespace TmpFontPipeline.Sample.DemoWithFonts.Editor
         private const string EuropeanUiFontRelativePath = "EN/NotoSans-Medium SDF.asset";
         private const string EuropeanDialogueFontRelativePath = "EN/NotoSans-Regular SDF.asset";
 
-        [MenuItem("TMP 폰트 파이프라인/샘플/Noto 데모 경로 연결", priority = 125)]
+        [MenuItem("Tools/TMP Font Pipeline/샘플/Noto 데모 경로 연결", priority = 125)]
         public static void LinkImportedSamplePaths()
         {
             if (!TryFindSampleRoot(out string sampleRoot, out string profilePath))

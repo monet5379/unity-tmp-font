@@ -9,9 +9,9 @@
 - **문자 추출** — `String*.json` → `unique_chars_*.txt` (언어 버킷, Ui/Dialogue 분리, sanitize)
 - **Static atlas Apply** — Generated txt → Editor Window + `FontAtlasApplyProfile`로 TMP Static SDF bake
 - **런타임 warmup** — `FontWarmupService` + `IFontWarmupTarget` (역할별 sample, font 1개당 1프레임)
-- **Demo** (선택) — `Assets/Project` · `Assets/Scenes` · `Assets/Editor` 놀이터: `SampleScene`, 언어 전환, string key picker
+- **Demo** (선택) — `Assets/Project` · `Assets/Scenes` 놀이터: `SampleScene`, 언어 전환, string key picker
 
-설치 단위는 UPM **`Packages/com.monet5379.tmp-font-pipeline`**이에요. Demo 쪽 `Assets/Project` · `Assets/Editor` · `Assets/Scenes`는 이 repo 놀이터(비설치)예요.
+설치 단위는 UPM **`Packages/com.monet5379.tmp-font-pipeline`**이에요. Demo 쪽 `Assets/Project` · `Assets/Scenes`는 이 repo 놀이터(비설치)예요.
 
 ![파이프라인](docs/images/pipeline.ko.png)
 
@@ -44,9 +44,9 @@ https://github.com/monet5379/unity-tmp-font.git?path=/Packages/com.monet5379.tmp
 > [!NOTE]
 > **이 repo에서 확인 (선택)**
 >
-> - **개발용 repo:** `Assets/Project` · `Assets/Scenes` · `Assets/Editor` 놀이터 + `Assets/Addressables/JSON` · `Assets/Project/Font/Generated`. Package Manager UPM 샘플 **Import는 하지 않아요** (Addressables JSON과 겹치면 Extract 입력이 헷갈려요). 소비 프로젝트는 [패키지 README — Samples](Packages/com.monet5379.tmp-font-pipeline/README.md#samples) — **Demo (JSON + Warmup)** 또는 **Demo (Noto + Baked Atlas)**.
+> - **개발용 repo:** `Assets/Project` · `Assets/Scenes` 놀이터 + `Assets/Addressables/JSON` · `Assets/Project/Font/Generated` · 버전 관리된 `FontAtlasApplyProfile` · `FontRoleCatalog`. Package Manager UPM 샘플 **Import는 하지 않아요** (Addressables JSON과 겹치면 Extract 입력이 헷갈려요). 소비 프로젝트는 [패키지 README — Samples](Packages/com.monet5379.tmp-font-pipeline/README.md#samples) — **Demo (JSON + Warmup)** 또는 **Demo (Noto + Baked Atlas)**.
 > - Unity로 **repo 루트**를 연다 → `Assets/Scenes/SampleScene` Play → 국기 버튼·key picker로 warmup·라벨을 확인해요.
-> - Demo 스크립트·씬·Editor 시드는 **패키지·설치 대상이 아니에요.** 런타임 Demo asmdef(`Assets/Project/Scripts/TmpFontPipeline.Demo.asmdef`)는 **`TmpFontPipeline.Runtime`** (`Packages/.../Runtime/TmpFontPipeline.Runtime.asmdef`)을 참조해요.
+> - Demo 스크립트·씬·프로필 에셋은 **패키지·설치 대상이 아니에요.** Extract·Apply Active 경로는 `Assets/Project/Editor/ProjectExtractPathDefaults`가 EditorPrefs에 시드해요. 런타임 Demo asmdef(`Assets/Project/Scripts/TmpFontPipeline.Demo.asmdef`)는 **`TmpFontPipeline.Runtime`** (`Packages/.../Runtime/TmpFontPipeline.Runtime.asmdef`)을 참조해요.
 > - Extract JSON/출력 폴더·Apply Active Profile은 창·`EditorPrefs`·프로필 에셋으로 **직접 지정**해요. 패키지에 Demo 기본 경로는 없어요.
 
 기본 Extract 파서는 Unity `JsonUtility`예요. 불규칙 JSON은 창에서 **Newtonsoft** 모드를 쓰세요.
@@ -79,7 +79,7 @@ Ui 버킷(`unique_chars_<Language>.txt`, Dialogue 접미사 없음) 추출 txt�
 
 ![Extract 탭 — JSON 폴더, 버킷 preview, Extract Unique Characters](docs/images/editor-window-extract.png)
 
-**TMP 폰트 파이프라인 → 창 열기** → **추출** 탭.
+**Tools → TMP Font Pipeline → 창 열기** → **추출** 탭.
 
 1. **JSON 폴더** · **출력 폴더** 지정 (값은 `EditorPrefs`에 저장. 이 repo는 최초 실행 시 `Assets/Project/Editor/ProjectExtractPathDefaults`가 JSON `Assets/Addressables/JSON`, 출력 `Assets/Project/Font/Generated`로 시드).
 2. 파서(`JsonUtility` 기본, 불규칙 JSON은 `Newtonsoft`) · **유럽어 추출** — **이 repo 기본 `유럽어 통합`** (`ProjectExtractPathDefaults`).
@@ -100,20 +100,18 @@ Ui 버킷(`unique_chars_<Language>.txt`, Dialogue 접미사 없음) 추출 txt�
 
 같은 창 → **적용** 탭.
 
-1. **Apply 프로필** 지정, 엔트리 **켜** 토글(또는 **전체 켜기** / **전체 끄기**).
+1. **Apply 프로필** 지정 (이 repo: `ProjectExtractPathDefaults`가 Active Profile을 `Assets/Project/Font/FontAtlasApplyProfile`로 시드), 엔트리 **켜** 토글(또는 **전체 켜기** / **전체 끄기**).
 2. **Generated 문자 적용**.
    - Enabled 항목 중 **동일 `TMP_FontAsset`이 두 번 이상**이면 Console·Apply 탭에 경고해요 (실수 방지). `MergedEuropean`처럼 **서로 다른 폰트**에 같은 txt를 bake하는 구성은 Bucket만 같고 폰트가 다르면 경고하지 않아요.
    - **Ping**은 Project 창에서 프로필 에셋을 하이라이트해요.
    - Apply 시 대상 atlas 크기를 `2048x2048`로 맞춘 뒤 bake해요.
 3. 대상 Font Asset의 Atlas Population Mode = **Static** 확인.
 
-**도움말** 탭은 추출 → 적용 단계 요약만 보여줘요 (이 repo용 **데모 에셋 생성** 버튼 없음; UPM Noto 샘플은 **샘플 → Noto 데모 경로 연결**).
+**도움말** 탭은 추출 → 적용 단계 요약만 보여줘요. UPM **Demo (Noto + Baked Atlas)** Import 후에는 **Tools → TMP Font Pipeline → 샘플 → Noto 데모 경로 연결**을 쓰세요.
 
-**이 repo — Demo 시드** (`Assets/Editor/DemoFontProfileBootstrap`):
+**이 repo — Apply·Catalog (버전 관리)** — `Assets/Project/Font/FontAtlasApplyProfile` · `Assets/Addressables/Scriptable/FontRoleCatalog`. Active Profile·Extract 폴더는 `ProjectExtractPathDefaults`가 첫 Editor 로드 시 EditorPrefs에 넣어요.
 
-메뉴 **TMP 폰트 파이프라인 → 폰트 아틀라스 Apply 프로필 → 데모 에셋 생성** — `Assets/Project/Font/FontAtlasApplyProfile` + `Assets/Addressables/Scriptable/FontRoleCatalog` 시드, Active Profile 설정. 프로필이 이미 있으면 demo 바인딩으로 **덮어씀**. 유럽어 PerLanguage 프로필이면 같은 메뉴를 다시 실행(재시드)하세요.
-
-Demo 매핑 (Create Demo Assets 후, 드래곤이즈데드 `Font_European` 패턴):
+Demo 매핑 (드래곤이즈데드 `Font_European` 패턴):
 
 | Bucket | Role | Static asset |
 |--------|------|----------------|
@@ -128,7 +126,7 @@ Demo 매핑 (Create Demo Assets 후, 드래곤이즈데드 `Font_European` 패�
 
 **Font Role Catalog** (`Assets → Create → TMP 폰트 파이프라인 → 폰트 역할 카탈로그`) — `LanguageId` + `Ui` / `Dialogue` → `TMP_FontAsset`.
 
-이 repo에서는 **Create Demo Assets** 메뉴로 `Assets/Addressables/Scriptable/FontRoleCatalog`가 시드돼요. 소비 프로젝트는 Catalog를 직접 만들거나, **Demo (Noto + Baked Atlas)** 샘플 Import 후 **Noto 데모 경로 연결**로 `Settings/FontRoleCatalog`를 쓸 수 있어요 ([패키지 README — Samples](Packages/com.monet5379.tmp-font-pipeline/README.md#samples)).
+이 repo에는 `Assets/Addressables/Scriptable/FontRoleCatalog`가 포함돼요. 소비 프로젝트는 Catalog를 직접 만들거나, **Demo (Noto + Baked Atlas)** 샘플 Import 후 **Tools → TMP Font Pipeline → 샘플 → Noto 데모 경로 연결**로 `Settings/FontRoleCatalog`를 쓸 수 있어요 ([패키지 README — Samples](Packages/com.monet5379.tmp-font-pipeline/README.md#samples)).
 
 ## Runtime — 폰트 warmup
 
@@ -162,9 +160,8 @@ public sealed class MyFontWarmupTarget : IFontWarmupTarget
 
 놀이터 전용이에요. 출시용 로컬라이즈·Font Asset 템플릿이 아니에요.
 
-1. **TMP 폰트 파이프라인 → 폰트 아틀라스 Apply 프로필 → 데모 에셋 생성** (1회).
-2. **Extract** 후 **Apply** — Static SDF가 `Assets/Project/Font/Generated/`와 일치하는지 확인.
-3. **`Assets/Scenes/SampleScene.unity`** 열고 Play.
+1. **Extract** 후 **Apply** — Static SDF가 `Assets/Project/Font/Generated/`와 일치하는지 확인 (프로필·Catalog는 repo에 있음).
+2. **`Assets/Scenes/SampleScene.unity`** 열고 Play.
 
 | 오브젝트 | 스크립트 | 역할 |
 |----------|----------|------|

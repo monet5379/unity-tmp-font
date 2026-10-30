@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+### Removed
+
+- 개발 repo **데모 에셋 생성** 메뉴·`DemoFontProfileBootstrap` — Apply 프로필·`FontRoleCatalog`는 repo 에셋으로 유지, Extract·Active Profile 시드는 `ProjectExtractPathDefaults`.
+
+### Changed
+
+- Editor `MenuItem` 경로를 **Tools → TMP Font Pipeline** 아래로 통일.
+- README·Architecture·Samples README·`package.json` 샘플 설명을 위 메뉴·`ProjectExtractPathDefaults`·버전 관리 Demo 에셋 기준으로 정리.
 ## [0.2.0] - 2026-10-30
 
 ### Added
