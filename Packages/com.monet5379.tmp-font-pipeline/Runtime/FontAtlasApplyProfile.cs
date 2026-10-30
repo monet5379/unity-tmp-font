@@ -8,7 +8,7 @@ namespace TmpFontPipeline
     [CreateAssetMenu(fileName = "FontAtlasApplyProfile", menuName = "Tmp Font Pipeline/Font Atlas Apply Profile")]
     public sealed class FontAtlasApplyProfile : ScriptableObject
     {
-        [SerializeField] private string _generatedFolder = "Assets/Demo/Generated";
+        [SerializeField] private string _generatedFolder = string.Empty;
         [SerializeField] private FontAtlasApplyEntry[] _entries = Array.Empty<FontAtlasApplyEntry>();
 
         public string GeneratedFolder => _generatedFolder;

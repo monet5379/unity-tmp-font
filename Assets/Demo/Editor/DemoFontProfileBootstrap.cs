@@ -1,14 +1,16 @@
 using TmpFontPipeline;
+using TmpFontPipeline.Editor;
 using UnityEditor;
 using UnityEngine;
 
-namespace TmpFontPipeline.Editor
+namespace TmpFontPipeline.Demo.Editor
 {
     public static class DemoFontProfileBootstrap
     {
         private const string DemoFolder = "Assets/Demo";
         private const string DemoFontsRoot = "Assets/Demo/Fonts";
-        private const string ApplyProfilePath = FontAtlasApplySettings.DemoProfilePath;
+        private const string DemoGeneratedFolder = "Assets/Demo/Generated";
+        private const string ApplyProfilePath = "Assets/Demo/FontAtlasApplyProfile.asset";
         private const string RoleCatalogPath = "Assets/Demo/FontRoleCatalog.asset";
 
         // Demo Static font 경로 SSOT — Apply Profile·Role Catalog 시드 공통.
@@ -96,7 +98,7 @@ namespace TmpFontPipeline.Editor
             }
 
             SerializedObject serialized = new SerializedObject(profile);
-            serialized.FindProperty("_generatedFolder").stringValue = StringJsonCharacterExtractor.DefaultOutputPath;
+            serialized.FindProperty("_generatedFolder").stringValue = DemoGeneratedFolder;
             serialized.FindProperty("_entries").arraySize = DemoFontBindings.Length * 2;
 
             int entryIndex = 0;

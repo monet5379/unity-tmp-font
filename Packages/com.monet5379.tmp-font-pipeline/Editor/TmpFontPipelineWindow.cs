@@ -9,6 +9,9 @@ namespace TmpFontPipeline.Editor
     // Extract + Apply를 한 창에서 설정·실행합니다.
     public sealed class TmpFontPipelineWindow : EditorWindow
     {
+        private const string PrefsJsonFolderKey = "TmpFontPipeline.JsonSearchPath";
+        private const string PrefsOutputFolderKey = "TmpFontPipeline.OutputPath";
+
         private static readonly string[] TabLabels = { "Extract", "Apply", "Help" };
 
         private Vector2 _scroll;
@@ -28,16 +31,8 @@ namespace TmpFontPipeline.Editor
 
         private void OnEnable()
         {
-            if (string.IsNullOrEmpty(_jsonSearchPath))
-            {
-                _jsonSearchPath = StringJsonCharacterExtractor.DefaultJsonSearchPath;
-            }
-
-            if (string.IsNullOrEmpty(_outputPath))
-            {
-                _outputPath = StringJsonCharacterExtractor.DefaultOutputPath;
-            }
-
+            _jsonSearchPath = EditorPrefs.GetString(PrefsJsonFolderKey, string.Empty);
+            _outputPath = EditorPrefs.GetString(PrefsOutputFolderKey, string.Empty);
             BindProfile(FontAtlasApplySettings.LoadActiveProfile());
         }
 
@@ -67,10 +62,22 @@ namespace TmpFontPipeline.Editor
 
         private void DrawExtractSection()
         {
+            EditorGUI.BeginChangeCheck();
             _jsonSearchPath = EditorGUILayout.TextField("JSON Folder", _jsonSearchPath);
+            if (EditorGUI.EndChangeCheck())
+            {
+                EditorPrefs.SetString(PrefsJsonFolderKey, _jsonSearchPath ?? string.Empty);
+            }
+
             DrawPathPingRow(_jsonSearchPath);
 
+            EditorGUI.BeginChangeCheck();
             _outputPath = EditorGUILayout.TextField("Output Folder", _outputPath);
+            if (EditorGUI.EndChangeCheck())
+            {
+                EditorPrefs.SetString(PrefsOutputFolderKey, _outputPath ?? string.Empty);
+            }
+
             DrawPathPingRow(_outputPath);
 
             JsonParserMode parserMode = (JsonParserMode)EditorGUILayout.EnumPopup(
@@ -83,10 +90,18 @@ namespace TmpFontPipeline.Editor
 
             DrawExtractPreview();
 
-            bool canExtract = !EditorApplication.isPlaying && DirectoryExistsAssetPath(_jsonSearchPath);
+            bool pathsConfigured = !string.IsNullOrWhiteSpace(_jsonSearchPath)
+                && !string.IsNullOrWhiteSpace(_outputPath);
+            bool canExtract = !EditorApplication.isPlaying
+                && pathsConfigured
+                && DirectoryExistsAssetPath(_jsonSearchPath);
             if (EditorApplication.isPlaying)
             {
                 EditorGUILayout.HelpBox("Exit Play Mode to extract characters.", MessageType.Warning);
+            }
+            else if (!pathsConfigured)
+            {
+                EditorGUILayout.HelpBox("Set JSON Folder and Output Folder (saved in EditorPrefs).", MessageType.Warning);
             }
             else if (!DirectoryExistsAssetPath(_jsonSearchPath))
             {
@@ -141,15 +156,9 @@ namespace TmpFontPipeline.Editor
 
             using (new EditorGUILayout.HorizontalScope())
             {
-                if (GUILayout.Button("Use Demo Profile"))
-                {
-                    FontAtlasApplySettings.ActiveProfilePath = FontAtlasApplySettings.DemoProfilePath;
-                    BindProfile(FontAtlasApplySettings.LoadActiveProfile());
-                }
-
                 using (new EditorGUI.DisabledScope(_profile == null))
                 {
-                    if (GUILayout.Button("Ping"))
+                    if (GUILayout.Button("Ping Profile"))
                     {
                         EditorGUIUtility.PingObject(_profile);
                     }
@@ -159,7 +168,7 @@ namespace TmpFontPipeline.Editor
             if (_profile == null)
             {
                 EditorGUILayout.HelpBox(
-                    "Assign a Font Atlas Apply Profile, or use Create Demo Assets / Use Demo Profile.",
+                    "Assign a Font Atlas Apply Profile asset.",
                     MessageType.Warning);
             }
             else
@@ -268,42 +277,11 @@ namespace TmpFontPipeline.Editor
         private void DrawHelpSection()
         {
             EditorGUILayout.HelpBox(
-                "1. Extract String*.json → unique_chars_*.txt\n" +
-                "2. Toggle Enabled entries on the Apply Profile\n" +
-                "3. Apply to Static TMP font assets (atlas 2048)\n" +
+                "1. Set JSON Folder and Output Folder on Extract (paths persist in EditorPrefs).\n" +
+                "2. Extract String*.json → unique_chars_*.txt\n" +
+                "3. Assign Apply Profile, toggle Enabled entries, Apply to Static TMP fonts (atlas 2048)\n" +
                 "Detail logs are written to the Console.",
                 MessageType.None);
-
-            bool demoProfileExists = AssetDatabase.LoadAssetAtPath<FontAtlasApplyProfile>(
-                FontAtlasApplySettings.DemoProfilePath) != null;
-
-            if (demoProfileExists)
-            {
-                EditorGUILayout.HelpBox(
-                    "Demo profile already exists at Assets/Demo/FontAtlasApplyProfile.asset.\n" +
-                    "Resync Demo Assets will overwrite Apply Profile and Font Role Catalog from demo bindings.\n" +
-                    "Manual edits (Enabled, font refs, entry count) will be reset — Enabled becomes all true.",
-                    MessageType.Warning);
-            }
-            else
-            {
-                EditorGUILayout.HelpBox(
-                    "Demo profile is missing.\n" +
-                    "Create Demo Assets will create FontAtlasApplyProfile and FontRoleCatalog under Assets/Demo,\n" +
-                    "seed language × Ui/Dialogue entries, and set the demo profile as active.",
-                    MessageType.Info);
-            }
-
-            string buttonLabel = demoProfileExists ? "Resync Demo Assets" : "Create Demo Assets";
-            if (GUILayout.Button(buttonLabel))
-            {
-                DemoFontProfileBootstrap.CreateDemoAssets();
-                FontAtlasApplySettings.ActiveProfilePath = FontAtlasApplySettings.DemoProfilePath;
-                BindProfile(FontAtlasApplySettings.LoadActiveProfile());
-                _lastActionMessage = demoProfileExists
-                    ? "Demo assets resynced. Manual edits were overwritten."
-                    : "Demo assets created.";
-            }
         }
 
         private void DrawLastAction()

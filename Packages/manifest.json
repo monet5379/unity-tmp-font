@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.monet5379.tmp-font-pipeline": "file:com.monet5379.tmp-font-pipeline",
     "com.unity.ide.visualstudio": "2.0.28",
     "com.unity.multiplayer.center": "1.0.1",
     "com.unity.nuget.newtonsoft-json": "3.2.2",

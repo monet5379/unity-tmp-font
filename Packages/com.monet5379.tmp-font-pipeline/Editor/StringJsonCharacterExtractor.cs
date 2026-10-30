@@ -11,18 +11,19 @@ namespace TmpFontPipeline.Editor
 {
     public static class StringJsonCharacterExtractor
     {
-        public const string DefaultJsonSearchPath = "Assets/Demo/SampleData";
-        public const string DefaultOutputPath = "Assets/Demo/Generated";
-
         public static readonly string[] CjkLanguageFieldNames = FontAtlasFileNames.CjkLanguageFieldNames;
         public static readonly string[] EuropeanLanguageFieldNames = FontAtlasFileNames.EuropeanLanguageFieldNames;
         public static readonly string[] AllLanguageFieldNames = FontAtlasFileNames.AllLanguageFieldNames;
 
         // String*.json을 스캔해 언어 버킷별 unique_chars_*.txt를 생성합니다.
-        public static void Extract(
-            string jsonSearchPath = DefaultJsonSearchPath,
-            string outputPath = DefaultOutputPath)
+        public static void Extract(string jsonSearchPath, string outputPath)
         {
+            if (string.IsNullOrWhiteSpace(jsonSearchPath) || string.IsNullOrWhiteSpace(outputPath))
+            {
+                Debug.LogError("Tmp Font Pipeline: JSON folder and output folder must be set.");
+                return;
+            }
+
             JsonParserMode parserMode = JsonParserSettings.Mode;
             Debug.Log($"Tmp Font Pipeline: extracting with parser={parserMode}");
 

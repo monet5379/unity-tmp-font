@@ -1,0 +1,22 @@
+{
+  "name": "com.monet5379.tmp-font-pipeline",
+  "version": "0.1.0",
+  "displayName": "TMP Font Pipeline",
+  "description": "로컬라이즈 JSON에서 고유 글자 추출, Static atlas Apply, 런타임 TMP 폰트 워밍업",
+  "unity": "6000.3",
+  "dependencies": {
+    "com.unity.ugui": "2.0.0",
+    "com.unity.nuget.newtonsoft-json": "3.2.2"
+  },
+  "samples": [
+    {
+      "displayName": "Demo",
+      "description": "String*.json 예시와 IFontWarmupTarget 최소 스크립트. Package Manager에서 Import 후 JSON 경로·FontRoleCatalog를 프로젝트에 맞게 설정한다.",
+      "path": "Samples~/Demo"
+    }
+  ],
+  "author": {
+    "name": "monet5379",
+    "email": "monet5379@gmail.com"
+  }
+}

@@ -2,6 +2,8 @@
 
 로컬라이즈 JSON에서 고유 글자를 추출하고, 런타임 TMP 폰트 워밍업으로 Dynamic atlas 성장·첫 draw 스파이크를 플레이 밖으로 옮기는 파이프라인이에요.
 
+**구조·Extract → Apply → Warmup** 상세는 [Architecture](docs/architecture/Architecture_TmpFontPipeline.md)가 정본이다. 아래 **불변조건**만 README 계약이다.
+
 **포함**
 
 - **문자 추출** — `String*.json` → `unique_chars_*.txt` (언어 버킷, Ui/Dialogue 분리, sanitize)
@@ -9,7 +11,7 @@
 - **런타임 warmup** — `FontWarmupService` + `IFontWarmupTarget` (역할별 sample, font 1개당 1프레임)
 - **Demo** (선택) — `Assets/Demo` 놀이터: `SampleScene`, 언어 전환, string key picker
 
-게임에 넣을 패키지는 **`Assets/TmpFontPipeline`**만 복사해요. `Assets/Demo`는 참고용이에요.
+설치 단위는 UPM **`Packages/com.monet5379.tmp-font-pipeline`**이에요. `Assets/Demo`는 이 repo 놀이터(비설치)예요.
 
 ![파이프라인](docs/images/pipeline.ko.png)
 
@@ -17,13 +19,37 @@
 
 ![SampleScene — EN (Ui + Dialogue, 언어 버튼, key picker)](docs/images/scene-en.png)
 
+## 요구 사항
+
+- Unity **6000.3** 이상 (`com.monet5379.tmp-font-pipeline` `package.json`)
+- **TMP Essentials** — Window → TextMeshPro → Import TMP Essential Resources (Unity 6 · `com.unity.ugui`)
+- 패키지 의존: `com.unity.ugui` · `com.unity.nuget.newtonsoft-json` (Editor Newtonsoft 파서 모드)
+
 ## 설치
 
-`unity-tmp-font/Assets/TmpFontPipeline`를 프로젝트 `Assets/`로 통째 복사해요 (Runtime/Editor asmdef 유지).
+### Git URL (권장)
 
-이 저장소 Unity 프로젝트에는 이미 `Assets/TmpFontPipeline`와 데모 놀이터 `Assets/Demo`가 있어요. **Demo는 설치 대상이 아니에요.**
+Package Manager → **Install package from git URL**:
 
-Unity에서 프로젝트를 연 뒤 **TMP Essentials**를 한 번 import하세요 (Window → TextMeshPro → Import TMP Essential Resources). 기본 추출은 Unity `JsonUtility`예요. `com.unity.nuget.newtonsoft-json`은 선택적 Newtonsoft 파서 모드용 Editor 의존성이에요.
+```text
+https://github.com/monet5379/unity-tmp-font.git?path=/Packages/com.monet5379.tmp-font-pipeline#v0.1.0
+```
+
+### 로컬 임베디드
+
+`Packages/com.monet5379.tmp-font-pipeline`를 소비 프로젝트 `Packages/` 아래에 두거나, 이 repo처럼 `Packages/manifest.json`에 `file:com.monet5379.tmp-font-pipeline`로 참조해요.
+
+패키지 README·CHANGELOG: [`Packages/com.monet5379.tmp-font-pipeline/README.md`](Packages/com.monet5379.tmp-font-pipeline/README.md).
+
+> [!NOTE]
+> **이 repo에서 확인 (선택)**
+>
+> - **개발용 repo:** `Assets/Demo` 놀이터만 써요. Package Manager에서 **Demo** 샘플 **Import는 하지 않아요** (Import한 샘플 JSON과 Demo `SampleData`가 겹치면 Extract 입력이 헷갈려요). 배포용 슬림 예시 정본은 `Samples~/Demo`이며, 소비 프로젝트는 [패키지 README — Samples](Packages/com.monet5379.tmp-font-pipeline/README.md#samples)를 따른다.
+> - Unity로 **repo 루트**를 연다 → `Assets/Demo/Scenes/SampleScene` Play → 국기 버튼·key picker로 warmup·라벨을 확인해요.
+> - `Assets/Demo`는 **패키지·설치 대상이 아니에요.** Demo 스크립트는 **`TmpFontPipeline.Runtime`** (`Packages/.../Runtime/TmpFontPipeline.Runtime.asmdef`)을 참조하는 asmdef 아래에 있어요.
+> - Extract JSON/출력 폴더·Apply Active Profile은 창·`EditorPrefs`·프로필 에셋으로 **직접 지정**해요. 패키지에 Demo 기본 경로는 없어요.
+
+기본 Extract 파서는 Unity `JsonUtility`예요. 불규칙 JSON은 창에서 **Newtonsoft** 모드를 쓰세요.
 
 ## 불변조건
 
@@ -52,10 +78,10 @@ Sanitize 제거 대상: TMP style/color/bold/italic/size 태그, `<sprite…>`, 
 
 **Tmp Font Pipeline → Open Window** → **Extract** 탭.
 
-1. JSON/출력 폴더·파서(`JsonUtility` 기본, 불규칙 JSON은 `Newtonsoft`) 설정.
-2. **Extract Unique Characters**. `String*.json` 수정 후에는 **Extract를 다시** 실행해 `Assets/Demo/Generated/`와 맞추세요.
-   - 입력 기본: `Assets/Demo/SampleData` (`String*.json`)
-   - 출력 기본: `Assets/Demo/Generated` (`unique_chars_*.txt`)
+1. **JSON Folder** · **Output Folder** 지정 (값은 `EditorPrefs`에 저장. 비어 있으면 빈 칸).
+2. 파서(`JsonUtility` 기본, 불규칙 JSON은 `Newtonsoft`) 설정.
+3. **Extract Unique Characters**. `String*.json` 수정 후에는 **Extract를 다시** 실행해 Generated txt와 맞추세요.
+   - **이 repo 예:** JSON `Assets/Demo/SampleData`, 출력 `Assets/Demo/Generated` (`unique_chars_*.txt`)
 
 | 출력 | 소스 |
 |------|------|
@@ -71,24 +97,19 @@ Sanitize 제거 대상: TMP style/color/bold/italic/size 태그, `<sprite…>`, 
 
 ![Apply 탭 — Font Atlas Apply Profile, Enabled 엔트리](docs/images/editor-window-apply.png)
 
-같은 창 → **Apply** 탭 (**Help**에서 Demo 시드).
+같은 창 → **Apply** 탭.
 
-1. **Font Atlas Apply Profile** 지정(또는 **Use Demo Profile**), 엔트리 **Enabled** 토글(또는 **Enable All** / **Disable All**).
+1. **Font Atlas Apply Profile** 지정, 엔트리 **Enabled** 토글(또는 **Enable All** / **Disable All**).
 2. **Apply Generated Characters**.
    - **Ping**은 Project 창에서 프로필 에셋을 하이라이트해요.
    - Apply 시 대상 atlas 크기를 `2048x2048`로 맞춘 뒤 bake해요.
 3. 대상 Font Asset의 Atlas Population Mode = **Static** 확인.
 
-**Help** 탭 — Demo 시드:
+**Help** 탭은 Extract → Apply 단계 요약만 보여줘요 (Demo 시드 버튼 없음).
 
-![Help 탭 — Create Demo Assets / Resync Demo Assets](docs/images/editor-window-help.png)
+**이 repo — Demo 시드** (`Assets/Demo/Editor/DemoFontProfileBootstrap`):
 
-| Demo 프로필 | 버튼 | 동작 |
-|-------------|------|------|
-| 없음 | **Create Demo Assets** | `Assets/Demo`에 `FontAtlasApplyProfile` + `FontRoleCatalog` 생성·시드, Active Profile 설정 |
-| 있음 | **Resync Demo Assets** | 동일 에셋을 로드한 뒤 demo 바인딩으로 **덮어씀** (`Enabled` 전부 true, 수동 편집 초기) |
-
-메뉴 **Tmp Font Pipeline → Font Atlas Apply Profile → Create Demo Assets**와 동일해요. 유럽 분리 이전 프로필이면 다시 실행(재시드)하세요.
+메뉴 **Tmp Font Pipeline → Font Atlas Apply Profile → Create Demo Assets** — `Assets/Demo`에 `FontAtlasApplyProfile` + `FontRoleCatalog` 생성·시드, Active Profile 설정. 프로필이 이미 있으면 demo 바인딩으로 **덮어씀** (`Enabled` 전부 true). 유럽 분리 이전 프로필이면 같은 메뉴를 다시 실행(재시드)하세요.
 
 Demo 매핑 (Create Demo Assets 후):
 
@@ -103,7 +124,7 @@ Demo 매핑 (Create Demo Assets 후):
 
 **Font Role Catalog** (`Assets → Create → Tmp Font Pipeline → Font Role Catalog`) — `LanguageId` + `Ui` / `Dialogue` → `TMP_FontAsset`.
 
-Demo catalog는 **Create Demo Assets**로 `Assets/Demo`에 시드돼요.
+이 repo에서는 **Create Demo Assets** 메뉴로 `Assets/Demo`에 catalog가 시드돼요. 소비 프로젝트는 자기 `FontRoleCatalog`를 만든다.
 
 ## Runtime — 폰트 warmup
 
@@ -116,7 +137,7 @@ Ui·Dialogue Static atlas는 **서로 다른 추출 버킷**(`unique_chars_*.txt
 | `Ui` | `StringUI` → `Confirm` | `확인` |
 | `Dialogue` | `StringDialogue` → `dlg_intro` | `어서 오세요, 모험가.` |
 
-`FontWarmupSampleText.GetForLanguage(languageId, role)`는 Demo JSON 키와 맞춰져 있어요. 게임 문자열이 다르면 `GetSampleText`를 override하되, 각 sample은 해당 role의 추출 charset 안에 두세요.
+`FontWarmupSampleText.GetForLanguage(languageId, role)`는 Demo JSON 키와 맞춘 **편의 기본값**이에요. 게임 문자열이 다르면 `GetSampleText`를 override하되, 각 sample은 해당 role의 추출 charset 안에 두세요.
 
 ```csharp
 using TmpFontPipeline;
@@ -137,7 +158,7 @@ public sealed class MyFontWarmupTarget : IFontWarmupTarget
 
 놀이터 전용이에요. 출시용 로컬라이즈·Font Asset 템플릿이 아니에요.
 
-1. **Tmp Font Pipeline → Open Window → Help → Create Demo Assets** (1회).
+1. **Tmp Font Pipeline → Font Atlas Apply Profile → Create Demo Assets** (1회).
 2. **Extract** 후 **Apply** — Static SDF가 `Assets/Demo/Generated/`와 일치하는지 확인.
 3. **`Assets/Demo/Scenes/SampleScene.unity`** 열고 Play.
 
@@ -165,6 +186,14 @@ public sealed class MyFontWarmupTarget : IFontWarmupTarget
 - [TMP 폰트 워밍업](https://monet5379.github.io/notes/tmp-font-warmup/) — warmup vs Static SSOT
 - [TMP Font Pipeline (사이트)](https://monet5379.github.io/projects/tmp-font-pipeline/) — 포트폴리오 개요
 
+## Architecture
+
+- [Architecture_TmpFontPipeline](docs/architecture/Architecture_TmpFontPipeline.md) — asmdef · Extract → Apply → Warmup · Demo vs Samples~
+
 ## 라이선스
 
 [MIT](LICENSE)
+
+---
+
+README 본문은 AI-assisted로 작성·갱신했으며, 계약·코드와 충돌하면 **코드·Architecture**가 우선이다.

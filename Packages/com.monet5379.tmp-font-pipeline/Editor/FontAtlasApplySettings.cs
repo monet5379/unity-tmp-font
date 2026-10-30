@@ -6,7 +6,6 @@ namespace TmpFontPipeline.Editor
     public static class FontAtlasApplySettings
     {
         public const string PrefsKey = "TmpFontPipeline.FontAtlasApplyProfile";
-        public const string DemoProfilePath = "Assets/Demo/FontAtlasApplyProfile.asset";
 
         public static string ActiveProfilePath
         {
@@ -17,10 +16,6 @@ namespace TmpFontPipeline.Editor
         public static FontAtlasApplyProfile LoadActiveProfile()
         {
             string path = ActiveProfilePath;
-            if (string.IsNullOrEmpty(path))
-            {
-                path = DemoProfilePath;
-            }
 
             if (!string.IsNullOrEmpty(path))
             {
