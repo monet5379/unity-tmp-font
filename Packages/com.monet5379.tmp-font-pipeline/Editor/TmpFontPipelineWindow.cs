@@ -22,6 +22,7 @@ namespace TmpFontPipeline.Editor
         private FontAtlasApplyProfile _profile;
         private SerializedObject _serializedProfile;
         private string _lastActionMessage = string.Empty;
+        private MessageType _lastActionMessageType = MessageType.Info;
 
         [MenuItem("Tmp Font Pipeline/Open Window", priority = 0)]
         public static void ShowWindow()
@@ -92,9 +93,12 @@ namespace TmpFontPipeline.Editor
 
             bool pathsConfigured = !string.IsNullOrWhiteSpace(_jsonSearchPath)
                 && !string.IsNullOrWhiteSpace(_outputPath);
+            bool jsonFolderExists = DirectoryExistsAssetPath(_jsonSearchPath);
+            bool hasStringJsonInFolder = jsonFolderExists && HasStringJsonFiles(_jsonSearchPath);
             bool canExtract = !EditorApplication.isPlaying
                 && pathsConfigured
-                && DirectoryExistsAssetPath(_jsonSearchPath);
+                && jsonFolderExists
+                && hasStringJsonInFolder;
             if (EditorApplication.isPlaying)
             {
                 EditorGUILayout.HelpBox("Exit Play Mode to extract characters.", MessageType.Warning);
@@ -103,19 +107,40 @@ namespace TmpFontPipeline.Editor
             {
                 EditorGUILayout.HelpBox("Set JSON Folder and Output Folder (saved in EditorPrefs).", MessageType.Warning);
             }
-            else if (!DirectoryExistsAssetPath(_jsonSearchPath))
+            else if (!jsonFolderExists)
             {
                 EditorGUILayout.HelpBox($"JSON folder not found: {_jsonSearchPath}", MessageType.Warning);
+            }
+            else if (!hasStringJsonInFolder)
+            {
+                EditorGUILayout.HelpBox(
+                    $"No String*.json files in folder (top level only): {_jsonSearchPath}",
+                    MessageType.Warning);
             }
 
             using (new EditorGUI.DisabledScope(!canExtract))
             {
                 if (GUILayout.Button("Extract Unique Characters", GUILayout.Height(28f)))
                 {
-                    StringJsonCharacterExtractor.Extract(_jsonSearchPath, _outputPath);
-                    _lastActionMessage = "Extract completed. See Console for details.";
+                    bool ok = StringJsonCharacterExtractor.Extract(_jsonSearchPath, _outputPath);
+                    SetLastAction(
+                        ok
+                            ? "Extract completed. See Console for details."
+                            : "Extract failed. See Console for errors.",
+                        ok ? MessageType.Info : MessageType.Error);
                 }
             }
+        }
+
+        private static bool HasStringJsonFiles(string assetPath)
+        {
+            if (string.IsNullOrEmpty(assetPath) || !DirectoryExistsAssetPath(assetPath))
+            {
+                return false;
+            }
+
+            string absoluteDir = AssetPathToAbsolute(assetPath);
+            return Directory.GetFiles(absoluteDir, "String*.json", SearchOption.TopDirectoryOnly).Length > 0;
         }
 
         private void DrawExtractPreview()
@@ -174,6 +199,13 @@ namespace TmpFontPipeline.Editor
             else
             {
                 EditorGUILayout.LabelField("Generated Folder", _profile.GeneratedFolder);
+                if (string.IsNullOrWhiteSpace(_profile.GeneratedFolder))
+                {
+                    EditorGUILayout.HelpBox(
+                        "Set Generated Folder on the Apply Profile asset (Inspector) before Apply.",
+                        MessageType.Warning);
+                }
+
                 if (!PathsEqual(_outputPath, _profile.GeneratedFolder))
                 {
                     EditorGUILayout.HelpBox(
@@ -184,10 +216,15 @@ namespace TmpFontPipeline.Editor
                 DrawEntriesTable();
             }
 
-            bool canApply = !EditorApplication.isPlaying && _profile != null;
+            bool profileReady = _profile != null && !string.IsNullOrWhiteSpace(_profile.GeneratedFolder);
+            bool canApply = !EditorApplication.isPlaying && profileReady;
             if (EditorApplication.isPlaying)
             {
                 EditorGUILayout.HelpBox("Exit Play Mode to apply characters.", MessageType.Warning);
+            }
+            else if (_profile != null && string.IsNullOrWhiteSpace(_profile.GeneratedFolder))
+            {
+                EditorGUILayout.HelpBox("Generated Folder on the profile is empty.", MessageType.Warning);
             }
 
             using (new EditorGUI.DisabledScope(!canApply))
@@ -195,8 +232,12 @@ namespace TmpFontPipeline.Editor
                 if (GUILayout.Button("Apply Generated Characters", GUILayout.Height(28f)))
                 {
                     FlushProfileEdits();
-                    FontAtlasApplier.Apply(_profile);
-                    _lastActionMessage = "Apply completed. See Console for details.";
+                    bool ok = FontAtlasApplier.Apply(_profile);
+                    SetLastAction(
+                        ok
+                            ? "Apply completed. See Console for details."
+                            : "Apply failed or had failed entries. See Console for details.",
+                        ok ? MessageType.Info : MessageType.Error);
                 }
             }
         }
@@ -291,7 +332,13 @@ namespace TmpFontPipeline.Editor
                 return;
             }
 
-            EditorGUILayout.HelpBox(_lastActionMessage, MessageType.Info);
+            EditorGUILayout.HelpBox(_lastActionMessage, _lastActionMessageType);
+        }
+
+        private void SetLastAction(string message, MessageType type)
+        {
+            _lastActionMessage = message;
+            _lastActionMessageType = type;
         }
 
         private void BindProfile(FontAtlasApplyProfile profile)

@@ -23,20 +23,38 @@ namespace TmpFontPipeline.Editor
         private const int TotalApplySteps = StepVerifyResult;
         private const int DefaultAtlasSize = 2048;
 
-        // FontAtlasApplyProfile의 Enabled 항목에 Generated txt를 Static atlas에 반영합니다.
-        public static void Apply(FontAtlasApplyProfile profile)
+        private static readonly BindingFlags TmpInstanceNonPublic =
+            BindingFlags.Instance | BindingFlags.NonPublic;
+
+        private static readonly PropertyInfo SourceFontEditorRefProperty =
+            typeof(TMP_FontAsset).GetProperty("SourceFont_EditorRef", TmpInstanceNonPublic);
+
+        private static readonly FieldInfo SourceFontEditorRefField =
+            typeof(TMP_FontAsset).GetField("m_SourceFontFile_EditorRef", TmpInstanceNonPublic);
+
+        private static readonly FieldInfo SourceFontFileField =
+            typeof(TMP_FontAsset).GetField("m_SourceFontFile", TmpInstanceNonPublic);
+
+        public static bool Apply(FontAtlasApplyProfile profile)
         {
             if (profile == null)
             {
                 Debug.LogError("Font atlas apply profile is not set.");
-                return;
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(profile.GeneratedFolder))
+            {
+                Debug.LogError(
+                    "Tmp Font Pipeline: Font Atlas Apply Profile Generated Folder is not set. Assign a project folder (e.g. Assets/.../Generated).");
+                return false;
             }
 
             IReadOnlyList<FontAtlasApplyEntry> entries = profile.Entries;
             if (entries == null || entries.Count == 0)
             {
                 Debug.LogWarning("Font atlas apply profile has no entries.");
-                return;
+                return false;
             }
 
             WarnDuplicateEntries(entries);
@@ -56,17 +74,14 @@ namespace TmpFontPipeline.Editor
                     continue;
                 }
 
-                ApplyEntryResult result = ApplyEntry(profile, entry, summary);
-                switch (result)
+                switch (ApplyEntry(profile, entry, summary))
                 {
                     case ApplyEntryResult.Success:
                         successCount++;
                         break;
-
                     case ApplyEntryResult.Skipped:
                         skipCount++;
                         break;
-
                     default:
                         failCount++;
                         break;
@@ -86,6 +101,7 @@ namespace TmpFontPipeline.Editor
             }
 
             Debug.Log(summary.ToString());
+            return failCount == 0;
         }
 
         private static void WarnDuplicateEntries(IReadOnlyList<FontAtlasApplyEntry> entries)
@@ -112,27 +128,33 @@ namespace TmpFontPipeline.Editor
             FontAtlasApplyEntry entry,
             StringBuilder summary)
         {
-            string context = $"{entry.Bucket}/{entry.Role} ({entry.FontAsset?.name ?? "null"})";
+            string context = EntryContext(entry);
 
             if (entry.FontAsset == null)
             {
-                _ = summary.AppendLine($"  SKIP {entry.Bucket}/{entry.Role}: FontAsset is null");
+                _ = summary.AppendLine($"  SKIP {EntryLabel(entry)}: FontAsset is null");
                 return ApplyEntryResult.Skipped;
             }
 
             if (entry.FontAsset.atlasPopulationMode != AtlasPopulationMode.Static)
             {
                 _ = summary.AppendLine(
-                    $"  SKIP {entry.Bucket}/{entry.Role}: {entry.FontAsset.name} is not Static");
+                    $"  SKIP {EntryLabel(entry)}: {entry.FontAsset.name} is not Static");
                 return ApplyEntryResult.Skipped;
             }
 
             string assetPath = profile.GetResolvedPath(entry);
+            if (string.IsNullOrEmpty(assetPath))
+            {
+                _ = summary.AppendLine($"  FAIL {EntryLabel(entry)}: Generated Folder not set on profile");
+                return ApplyEntryResult.Failed;
+            }
+
             string absolutePath = AssetPathToAbsolute(assetPath);
             if (!File.Exists(absolutePath))
             {
                 LogApplyStep(context, StepReadGeneratedTxt, "read generated txt", false, $"missing {assetPath}");
-                _ = summary.AppendLine($"  FAIL {entry.Bucket}/{entry.Role}: missing {assetPath}");
+                _ = summary.AppendLine($"  FAIL {EntryLabel(entry)}: missing {assetPath}");
                 return ApplyEntryResult.Failed;
             }
 
@@ -140,8 +162,7 @@ namespace TmpFontPipeline.Editor
             LogApplyStep(context, StepReadGeneratedTxt, "read generated txt", true, $"{assetPath} ({chars.Length} chars)");
             LogCharacterDiff(entry, entry.FontAsset, chars);
 
-            TMP_FontAsset fontAsset = entry.FontAsset;
-            return TryBakeWithDynamicAndRestoreStatic(entry, assetPath, context, fontAsset, chars, summary);
+            return TryBakeWithDynamicAndRestoreStatic(entry, assetPath, context, entry.FontAsset, chars, summary);
         }
 
         private static ApplyEntryResult TryBakeWithDynamicAndRestoreStatic(
@@ -158,39 +179,42 @@ namespace TmpFontPipeline.Editor
             {
                 if (!TryLoadSourceFont(fontAsset, out Font sourceFont, out string sourceFontPath, out string loadFailDetail))
                 {
-                    LogApplyStep(context, StepLoadSourceFont, "load source TTF from GUID", false, loadFailDetail);
-                    _ = summary.AppendLine($"  FAIL {entry.Bucket}/{entry.Role}: {loadFailDetail}");
-                    return ApplyEntryResult.Failed;
+                    return FailEntryStep(entry, summary, context, StepLoadSourceFont, "load source TTF from GUID", loadFailDetail);
                 }
 
                 LogApplyStep(context, StepLoadSourceFont, "load source TTF from GUID", true, sourceFontPath);
 
                 if (!TryLinkEditorSourceFont(fontAsset, sourceFont, out string linkFailDetail))
                 {
-                    LogApplyStep(context, StepLinkSourceFont, "link m_SourceFontFile_EditorRef", false, linkFailDetail);
-                    _ = summary.AppendLine($"  FAIL {entry.Bucket}/{entry.Role}: {linkFailDetail}");
-                    return ApplyEntryResult.Failed;
+                    return FailEntryStep(
+                        entry,
+                        summary,
+                        context,
+                        StepLinkSourceFont,
+                        "link m_SourceFontFile_EditorRef",
+                        linkFailDetail);
                 }
 
                 LogApplyStep(context, StepLinkSourceFont, "link m_SourceFontFile_EditorRef", true, sourceFont.name);
 
                 if (!TrySetDynamicMode(fontAsset, out string dynamicFailDetail))
                 {
-                    LogApplyStep(context, StepSetDynamicMode, "switch to Dynamic for bake", false, dynamicFailDetail);
-                    _ = summary.AppendLine($"  FAIL {entry.Bucket}/{entry.Role}: {dynamicFailDetail}");
-                    return ApplyEntryResult.Failed;
+                    return FailEntryStep(entry, summary, context, StepSetDynamicMode, "switch to Dynamic for bake", dynamicFailDetail);
                 }
 
                 LogApplyStep(context, StepSetDynamicMode, "switch to Dynamic for bake", true, fontAsset.sourceFontFile.name);
 
                 if (!TrySetAtlasSize(fontAsset, DefaultAtlasSize, out string atlasSizeFailDetail))
                 {
-                    LogApplyStep(context, StepSetDynamicMode, "set atlas size", false, atlasSizeFailDetail);
-                    _ = summary.AppendLine($"  FAIL {entry.Bucket}/{entry.Role}: {atlasSizeFailDetail}");
-                    return ApplyEntryResult.Failed;
+                    return FailEntryStep(entry, summary, context, StepSetDynamicMode, "set atlas size", atlasSizeFailDetail);
                 }
 
-                LogApplyStep(context, StepSetDynamicMode, "set atlas size", true, $"{fontAsset.atlasWidth}x{fontAsset.atlasHeight}");
+                LogApplyStep(
+                    context,
+                    StepSetDynamicMode,
+                    "set atlas size",
+                    true,
+                    $"{fontAsset.atlasWidth}x{fontAsset.atlasHeight}");
 
                 int characterCountBeforeClear = fontAsset.characterTable.Count;
                 fontAsset.ClearFontAssetData(setAtlasSizeToZero: false);
@@ -204,72 +228,28 @@ namespace TmpFontPipeline.Editor
                 bool added = fontAsset.TryAddCharacters(chars, out string missing);
                 int characterCountAfterAdd = fontAsset.characterTable.Count;
                 bool addStepOk = added && (chars.Length == 0 || characterCountAfterAdd > 0);
-                string addDetail = $"TryAddCharacters={added}, characterTable={characterCountAfterAdd}";
-                MissingAnalysis missingAnalysis = AnalyzeMissing(sourceFont, missing);
-                if (!string.IsNullOrEmpty(missing))
-                {
-                    addDetail += $", missing={missing}";
-                    addDetail += $", {BuildMissingAnalysisDetail(missingAnalysis)}";
-                    addDetail +=
-                        $", atlas={fontAsset.atlasWidth}x{fontAsset.atlasHeight}, atlasTextures={fontAsset.atlasTextureCount}";
-                }
-
+                string addDetail = BuildAddCharactersDetail(fontAsset, added, characterCountAfterAdd, missing, sourceFont);
                 LogApplyStep(context, StepAddCharacters, "TryAddCharacters", addStepOk, addDetail);
                 if (!addStepOk)
                 {
                     _ = summary.AppendLine(
-                        $"  FAIL {entry.Bucket}/{entry.Role}: {fontAsset.name} <- {assetPath} ({addDetail})");
+                        $"  FAIL {EntryLabel(entry)}: {fontAsset.name} <- {assetPath} ({addDetail})");
                     return ApplyEntryResult.Failed;
                 }
 
-                if (!string.IsNullOrEmpty(missing))
-                {
-                    Debug.LogWarning(
-                        $"Tmp Font Pipeline: partial missing glyphs for {context}: {missing} " +
-                        $"({BuildMissingAnalysisDetail(missingAnalysis)}, " +
-                        $"atlas={fontAsset.atlasWidth}x{fontAsset.atlasHeight}, atlasTextures={fontAsset.atlasTextureCount})");
+                LogPartialMissingWarning(context, fontAsset, missing, sourceFont);
 
-                    if (fontAsset.atlasWidth >= DefaultAtlasSize && missingAnalysis.SourceHasGlyphCount > 0)
-                    {
-                        string fontAssetPath = AssetDatabase.GetAssetPath(fontAsset);
-                        Debug.LogWarning(
-                            $"Tmp Font Pipeline: atlas {fontAsset.atlasWidth}x{fontAsset.atlasHeight} is still insufficient for {context}. " +
-                            $"sourceHasGlyph={missingAnalysis.SourceHasGlyphCount}, missingUnique={missingAnalysis.MissingUniqueCount}. " +
-                            $"Consider splitting bucket/profile for this font. assetPath={fontAssetPath}");
-                    }
-                }
-
-                // TMP 내부 UpdateFontAssetsInUpdateQueue()는 internal이라 직접 호출할 수 없습니다.
-                // TryAddCharacters 과정에서 변경된 atlas texture를 공개 API로 Apply 처리합니다.
-                int appliedAtlasTextureCount = 0;
-                Texture2D[] atlasTextures = fontAsset.atlasTextures;
-                if (atlasTextures != null)
-                {
-                    for (int t = 0; t < atlasTextures.Length; t++)
-                    {
-                        Texture2D atlasTexture = atlasTextures[t];
-                        if (atlasTexture == null || !atlasTexture.isReadable)
-                        {
-                            continue;
-                        }
-
-                        atlasTexture.Apply(false, false);
-                        appliedAtlasTextureCount++;
-                    }
-                }
-
+                int appliedAtlasTextureCount = FlushReadableAtlasTextures(fontAsset);
                 LogApplyStep(
                     context,
                     StepFlushAtlas,
                     "flush atlas texture updates",
-                    appliedAtlasTextureCount >= 0,
+                    true,
                     $"applied {appliedAtlasTextureCount} atlas texture(s)");
 
                 if (!TryRestoreStaticMode(fontAsset, out string restoreFailDetail))
                 {
-                    LogApplyStep(context, StepRestoreStaticMode, "restore Static mode", false, restoreFailDetail);
-                    _ = summary.AppendLine($"  FAIL {entry.Bucket}/{entry.Role}: {restoreFailDetail}");
-                    return ApplyEntryResult.Failed;
+                    return FailEntryStep(entry, summary, context, StepRestoreStaticMode, "restore Static mode", restoreFailDetail);
                 }
 
                 restoredStatic = true;
@@ -288,12 +268,12 @@ namespace TmpFontPipeline.Editor
                 if (!verified)
                 {
                     _ = summary.AppendLine(
-                        $"  FAIL {entry.Bucket}/{entry.Role}: {fontAsset.name} <- {assetPath} (empty character table after apply)");
+                        $"  FAIL {EntryLabel(entry)}: {fontAsset.name} <- {assetPath} (empty character table after apply)");
                     return ApplyEntryResult.Failed;
                 }
 
                 _ = summary.AppendLine(
-                    $"  OK {entry.Bucket}/{entry.Role}: {fontAsset.name} <- {assetPath} ({fontAsset.characterTable.Count} characters in table)");
+                    $"  OK {EntryLabel(entry)}: {fontAsset.name} <- {assetPath} ({fontAsset.characterTable.Count} characters in table)");
                 return ApplyEntryResult.Success;
             }
             finally
@@ -311,6 +291,93 @@ namespace TmpFontPipeline.Editor
                     }
                 }
             }
+        }
+
+        private static ApplyEntryResult FailEntryStep(
+            FontAtlasApplyEntry entry,
+            StringBuilder summary,
+            string context,
+            int step,
+            string stepName,
+            string failDetail)
+        {
+            LogApplyStep(context, step, stepName, false, failDetail);
+            _ = summary.AppendLine($"  FAIL {EntryLabel(entry)}: {failDetail}");
+            return ApplyEntryResult.Failed;
+        }
+
+        private static string BuildAddCharactersDetail(
+            TMP_FontAsset fontAsset,
+            bool added,
+            int characterCountAfterAdd,
+            string missing,
+            Font sourceFont)
+        {
+            string addDetail = $"TryAddCharacters={added}, characterTable={characterCountAfterAdd}";
+            if (string.IsNullOrEmpty(missing))
+            {
+                return addDetail;
+            }
+
+            MissingAnalysis missingAnalysis = AnalyzeMissing(sourceFont, missing);
+            addDetail += $", missing={missing}";
+            addDetail += $", {BuildMissingAnalysisDetail(missingAnalysis)}";
+            addDetail +=
+                $", atlas={fontAsset.atlasWidth}x{fontAsset.atlasHeight}, atlasTextures={fontAsset.atlasTextureCount}";
+            return addDetail;
+        }
+
+        private static void LogPartialMissingWarning(
+            string context,
+            TMP_FontAsset fontAsset,
+            string missing,
+            Font sourceFont)
+        {
+            if (string.IsNullOrEmpty(missing))
+            {
+                return;
+            }
+
+            MissingAnalysis missingAnalysis = AnalyzeMissing(sourceFont, missing);
+            Debug.LogWarning(
+                $"Tmp Font Pipeline: partial missing glyphs for {context}: {missing} " +
+                $"({BuildMissingAnalysisDetail(missingAnalysis)}, " +
+                $"atlas={fontAsset.atlasWidth}x{fontAsset.atlasHeight}, atlasTextures={fontAsset.atlasTextureCount})");
+
+            if (fontAsset.atlasWidth < DefaultAtlasSize || missingAnalysis.SourceHasGlyphCount <= 0)
+            {
+                return;
+            }
+
+            string fontAssetPath = AssetDatabase.GetAssetPath(fontAsset);
+            Debug.LogWarning(
+                $"Tmp Font Pipeline: atlas {fontAsset.atlasWidth}x{fontAsset.atlasHeight} is still insufficient for {context}. " +
+                $"sourceHasGlyph={missingAnalysis.SourceHasGlyphCount}, missingUnique={missingAnalysis.MissingUniqueCount}. " +
+                $"Consider splitting bucket/profile for this font. assetPath={fontAssetPath}");
+        }
+
+        private static int FlushReadableAtlasTextures(TMP_FontAsset fontAsset)
+        {
+            int appliedCount = 0;
+            Texture2D[] atlasTextures = fontAsset.atlasTextures;
+            if (atlasTextures == null)
+            {
+                return appliedCount;
+            }
+
+            for (int t = 0; t < atlasTextures.Length; t++)
+            {
+                Texture2D atlasTexture = atlasTextures[t];
+                if (atlasTexture == null || !atlasTexture.isReadable)
+                {
+                    continue;
+                }
+
+                atlasTexture.Apply(false, false);
+                appliedCount++;
+            }
+
+            return appliedCount;
         }
 
         private static bool TryLoadSourceFont(
@@ -357,22 +424,15 @@ namespace TmpFontPipeline.Editor
         {
             failDetail = string.Empty;
 
-            Type fontAssetType = typeof(TMP_FontAsset);
-            PropertyInfo editorRefProperty = fontAssetType.GetProperty(
-                "SourceFont_EditorRef",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            if (editorRefProperty != null)
+            if (SourceFontEditorRefProperty != null)
             {
-                editorRefProperty.SetValue(fontAsset, sourceFont);
+                SourceFontEditorRefProperty.SetValue(fontAsset, sourceFont);
                 return true;
             }
 
-            FieldInfo editorRefField = fontAssetType.GetField(
-                "m_SourceFontFile_EditorRef",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            if (editorRefField != null)
+            if (SourceFontEditorRefField != null)
             {
-                editorRefField.SetValue(fontAsset, sourceFont);
+                SourceFontEditorRefField.SetValue(fontAsset, sourceFont);
                 return true;
             }
 
@@ -396,16 +456,13 @@ namespace TmpFontPipeline.Editor
                 return false;
             }
 
-            FieldInfo sourceFontField = typeof(TMP_FontAsset).GetField(
-                "m_SourceFontFile",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            if (sourceFontField == null)
+            if (SourceFontFileField == null)
             {
                 failDetail = "m_SourceFontFile field not found";
                 return false;
             }
 
-            sourceFontField.SetValue(fontAsset, editorRefFont);
+            SourceFontFileField.SetValue(fontAsset, editorRefFont);
 
             if (fontAsset.sourceFontFile == null)
             {
@@ -419,26 +476,19 @@ namespace TmpFontPipeline.Editor
         private static bool TryGetEditorSourceFontRef(TMP_FontAsset fontAsset, out Font editorRefFont)
         {
             editorRefFont = null;
-            Type fontAssetType = typeof(TMP_FontAsset);
 
-            PropertyInfo editorRefProperty = fontAssetType.GetProperty(
-                "SourceFont_EditorRef",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            if (editorRefProperty != null)
+            if (SourceFontEditorRefProperty != null)
             {
-                editorRefFont = editorRefProperty.GetValue(fontAsset) as Font;
+                editorRefFont = SourceFontEditorRefProperty.GetValue(fontAsset) as Font;
                 if (editorRefFont != null)
                 {
                     return true;
                 }
             }
 
-            FieldInfo editorRefField = fontAssetType.GetField(
-                "m_SourceFontFile_EditorRef",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            if (editorRefField != null)
+            if (SourceFontEditorRefField != null)
             {
-                editorRefFont = editorRefField.GetValue(fontAsset) as Font;
+                editorRefFont = SourceFontEditorRefField.GetValue(fontAsset) as Font;
             }
 
             return editorRefFont != null;
@@ -462,26 +512,27 @@ namespace TmpFontPipeline.Editor
         {
             failDetail = string.Empty;
 
+            TMPro.FontAssetCreationSettings previous = fontAsset.creationSettings;
             fontAsset.creationSettings = new TMPro.FontAssetCreationSettings
             {
-                sourceFontFileName = fontAsset.creationSettings.sourceFontFileName,
-                sourceFontFileGUID = fontAsset.creationSettings.sourceFontFileGUID,
-                faceIndex = fontAsset.creationSettings.faceIndex,
-                pointSizeSamplingMode = fontAsset.creationSettings.pointSizeSamplingMode,
-                pointSize = fontAsset.creationSettings.pointSize,
-                padding = fontAsset.creationSettings.padding,
-                paddingMode = fontAsset.creationSettings.paddingMode,
-                packingMode = fontAsset.creationSettings.packingMode,
+                sourceFontFileName = previous.sourceFontFileName,
+                sourceFontFileGUID = previous.sourceFontFileGUID,
+                faceIndex = previous.faceIndex,
+                pointSizeSamplingMode = previous.pointSizeSamplingMode,
+                pointSize = previous.pointSize,
+                padding = previous.padding,
+                paddingMode = previous.paddingMode,
+                packingMode = previous.packingMode,
                 atlasWidth = size,
                 atlasHeight = size,
-                characterSetSelectionMode = fontAsset.creationSettings.characterSetSelectionMode,
-                characterSequence = fontAsset.creationSettings.characterSequence,
-                referencedFontAssetGUID = fontAsset.creationSettings.referencedFontAssetGUID,
-                referencedTextAssetGUID = fontAsset.creationSettings.referencedTextAssetGUID,
-                fontStyle = fontAsset.creationSettings.fontStyle,
-                fontStyleModifier = fontAsset.creationSettings.fontStyleModifier,
-                renderMode = fontAsset.creationSettings.renderMode,
-                includeFontFeatures = fontAsset.creationSettings.includeFontFeatures
+                characterSetSelectionMode = previous.characterSetSelectionMode,
+                characterSequence = previous.characterSequence,
+                referencedFontAssetGUID = previous.referencedFontAssetGUID,
+                referencedTextAssetGUID = previous.referencedTextAssetGUID,
+                fontStyle = previous.fontStyle,
+                fontStyleModifier = previous.fontStyleModifier,
+                renderMode = previous.renderMode,
+                includeFontFeatures = previous.includeFontFeatures
             };
 
             var serialized = new SerializedObject(fontAsset);
@@ -536,30 +587,34 @@ namespace TmpFontPipeline.Editor
                 StringTextSanitizer.AddCodePoints(currentCodePoints, currentChars);
             }
 
-            int added = 0;
-            int removed = 0;
-            foreach (int codePoint in targetCodePoints)
-            {
-                if (!currentCodePoints.Contains(codePoint))
-                {
-                    added++;
-                }
-            }
-
-            foreach (int codePoint in currentCodePoints)
-            {
-                if (!targetCodePoints.Contains(codePoint))
-                {
-                    removed++;
-                }
-            }
+            int added = CountCodePointsNotIn(targetCodePoints, currentCodePoints);
+            int removed = CountCodePointsNotIn(currentCodePoints, targetCodePoints);
 
             if (added > 0 || removed > 0)
             {
                 Debug.Log(
-                    $"Tmp Font Pipeline diff {entry.Bucket}/{entry.Role}: +{added} -{removed} (full rebuild planned)");
+                    $"Tmp Font Pipeline diff {EntryLabel(entry)}: +{added} -{removed} (full rebuild planned)");
             }
         }
+
+        private static int CountCodePointsNotIn(HashSet<int> source, HashSet<int> excluded)
+        {
+            int count = 0;
+            foreach (int codePoint in source)
+            {
+                if (!excluded.Contains(codePoint))
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static string EntryLabel(FontAtlasApplyEntry entry) => $"{entry.Bucket}/{entry.Role}";
+
+        private static string EntryContext(FontAtlasApplyEntry entry) =>
+            $"{entry.Bucket}/{entry.Role} ({entry.FontAsset?.name ?? "null"})";
 
         private static string AssetPathToAbsolute(string assetPath)
         {

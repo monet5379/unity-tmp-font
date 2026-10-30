@@ -14,9 +14,14 @@ namespace TmpFontPipeline
         public string GeneratedFolder => _generatedFolder;
         public IReadOnlyList<FontAtlasApplyEntry> Entries => _entries;
 
-        // 항목의 Generated txt asset 경로를 반환합니다.
+        // 항목의 Generated txt asset 경로를 반환합니다. Generated Folder가 비어 있으면 null.
         public string GetResolvedPath(FontAtlasApplyEntry entry)
         {
+            if (string.IsNullOrWhiteSpace(_generatedFolder))
+            {
+                return null;
+            }
+
             string fileName = FontAtlasFileNames.ResolveFileName(entry.Bucket, entry.Role);
             return CombineAssetPath(_generatedFolder, fileName);
         }
@@ -24,6 +29,11 @@ namespace TmpFontPipeline
         private static string CombineAssetPath(string folder, string fileName)
         {
             string normalized = folder.Replace('\\', '/').TrimEnd('/');
+            if (string.IsNullOrEmpty(normalized))
+            {
+                return null;
+            }
+
             return $"{normalized}/{fileName}";
         }
     }

@@ -15,13 +15,13 @@ namespace TmpFontPipeline.Editor
         public static readonly string[] EuropeanLanguageFieldNames = FontAtlasFileNames.EuropeanLanguageFieldNames;
         public static readonly string[] AllLanguageFieldNames = FontAtlasFileNames.AllLanguageFieldNames;
 
-        // String*.json을 스캔해 언어 버킷별 unique_chars_*.txt를 생성합니다.
-        public static void Extract(string jsonSearchPath, string outputPath)
+        // String*.json을 스캔해 언어 버킷별 unique_chars_*.txt를 생성합니다. 성공 시 true.
+        public static bool Extract(string jsonSearchPath, string outputPath)
         {
             if (string.IsNullOrWhiteSpace(jsonSearchPath) || string.IsNullOrWhiteSpace(outputPath))
             {
                 Debug.LogError("Tmp Font Pipeline: JSON folder and output folder must be set.");
-                return;
+                return false;
             }
 
             JsonParserMode parserMode = JsonParserSettings.Mode;
@@ -31,14 +31,14 @@ namespace TmpFontPipeline.Editor
             if (!Directory.Exists(jsonDir))
             {
                 Debug.LogError($"String JSON directory not found: {jsonDir}");
-                return;
+                return false;
             }
 
             string[] jsonFiles = Directory.GetFiles(jsonDir, "String*.json", SearchOption.TopDirectoryOnly);
             if (jsonFiles.Length == 0)
             {
                 Debug.LogError($"No String*.json files found in: {jsonDir}");
-                return;
+                return false;
             }
 
             FontExtractionBucket defaultBucket = CreateExtractionBucket();
@@ -77,6 +77,7 @@ namespace TmpFontPipeline.Editor
 
             AssetDatabase.Refresh();
             Debug.Log(summary.ToString());
+            return true;
         }
 
         private static bool IsDialogueJsonFile(string fileNameWithoutExtension)
