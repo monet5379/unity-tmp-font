@@ -32,7 +32,7 @@
 Package Manager → **Install package from git URL**:
 
 ```text
-https://github.com/monet5379/unity-tmp-font.git?path=/Packages/com.monet5379.tmp-font-pipeline#v0.2.0
+https://github.com/monet5379/unity-tmp-font.git?path=/Packages/com.monet5379.tmp-font-pipeline#v0.2.1
 ```
 
 ### 로컬 임베디드
