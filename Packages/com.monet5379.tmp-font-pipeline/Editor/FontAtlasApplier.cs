@@ -57,7 +57,7 @@ namespace TmpFontPipeline.Editor
                 return false;
             }
 
-            WarnDuplicateEntries(entries);
+            FontAtlasApplyDuplicateWarnings.LogEnabledDuplicateFontAssets(entries);
 
             int successCount = 0;
             int skipCount = 0;
@@ -102,31 +102,6 @@ namespace TmpFontPipeline.Editor
 
             Debug.Log(summary.ToString());
             return failCount == 0;
-        }
-
-        private static void WarnDuplicateEntries(IReadOnlyList<FontAtlasApplyEntry> entries)
-        {
-            var seen = new HashSet<string>(StringComparer.Ordinal);
-            for (int i = 0; i < entries.Count; i++)
-            {
-                FontAtlasApplyEntry entry = entries[i];
-                if (entry == null || !entry.Enabled || entry.FontAsset == null)
-                {
-                    continue;
-                }
-
-                string key = AssetDatabase.GetAssetPath(entry.FontAsset);
-                if (string.IsNullOrEmpty(key))
-                {
-                    key = entry.FontAsset.GetInstanceID().ToString();
-                }
-
-                if (!seen.Add(key))
-                {
-                    Debug.LogWarning(
-                        $"Tmp Font Pipeline: duplicate apply entry (same TMP_FontAsset): {entry.FontAsset.name} ({key})");
-                }
-            }
         }
 
         private static ApplyEntryResult ApplyEntry(

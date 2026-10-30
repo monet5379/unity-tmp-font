@@ -106,6 +106,7 @@ Ui 버킷(`unique_chars_<Language>.txt`, Dialogue 접미사 없음) 추출 txt�
 
 1. **Font Atlas Apply Profile** 지정, 엔트리 **Enabled** 토글(또는 **Enable All** / **Disable All**).
 2. **Apply Generated Characters**.
+   - Enabled 항목 중 **동일 `TMP_FontAsset`이 두 번 이상**이면 Console·Apply 탭에 경고해요 (실수 방지). `MergedEuropean`처럼 **서로 다른 폰트**에 같은 txt를 bake하는 구성은 Bucket만 같고 폰트가 다르면 경고하지 않아요.
    - **Ping**은 Project 창에서 프로필 에셋을 하이라이트해요.
    - Apply 시 대상 atlas 크기를 `2048x2048`로 맞춘 뒤 bake해요.
 3. 대상 Font Asset의 Atlas Population Mode = **Static** 확인.

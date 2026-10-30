@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using TmpFontPipeline;
@@ -321,6 +322,33 @@ namespace TmpFontPipeline.Editor
             {
                 EditorUtility.SetDirty(_profile);
             }
+
+            DrawDuplicateFontAssetWarnings();
+        }
+
+        private void DrawDuplicateFontAssetWarnings()
+        {
+            if (_profile == null)
+            {
+                return;
+            }
+
+            IReadOnlyList<string> warnings =
+                FontAtlasApplyDuplicateWarnings.GetEnabledDuplicateFontAssetWarnings(_profile.Entries);
+            if (warnings.Count == 0)
+            {
+                return;
+            }
+
+            var body = new StringBuilder();
+            _ = body.AppendLine(
+                "Enabled entries reference the same TMP_FontAsset more than once (Apply still runs; see Console):");
+            for (int i = 0; i < warnings.Count; i++)
+            {
+                _ = body.AppendLine($"• {warnings[i]}");
+            }
+
+            EditorGUILayout.HelpBox(body.ToString(), MessageType.Warning);
         }
 
         private void DrawHelpSection()
@@ -330,6 +358,7 @@ namespace TmpFontPipeline.Editor
                 "2. Extract String*.json → unique_chars_*.txt (European Extract: PerLanguage default, or MergedEuropean)\n" +
                 "3. Assign Apply Profile, toggle Enabled entries, Apply to Static TMP fonts (atlas 2048)\n" +
                 "MergedEuropean: use FontAtlasBucket.European on Apply entries (same txt → multiple fonts OK).\n" +
+                "Duplicate Enabled entries pointing at the same TMP_FontAsset show a warning (Apply tab + Console).\n" +
                 "Detail logs are written to the Console.",
                 MessageType.None);
         }

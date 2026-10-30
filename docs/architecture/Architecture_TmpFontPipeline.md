@@ -108,6 +108,7 @@ flowchart LR
 - **European Extract:** 기본 `PerLanguage` per-field txt. `MergedEuropean`(EditorPrefs)은 CJK 개별 + `unique_chars_European*` 합집합; Apply는 `FontAtlasBucket.European`.
 - **Sanitize:** Extract 전 TMP 태그·placeholder·`[token]` 제거. **런타임 표시**는 JSON 필드 그대로 (완성 문장 SSOT).
 - **Mandatory glyph:** Ui 버킷 Extract txt + Apply bake 시 `FontAtlasMandatoryCharacters`(`_`만). Dialogue Extract txt에는 주입하지 않음 — Apply는 txt 읽기 후 merge.
+- **Apply duplicate font:** Enabled 엔트리에서 동일 `TMP_FontAsset` 경로가 반복되면 경고(`FontAtlasApplyDuplicateWarnings`). Bucket/Role 중복만으로는 경고하지 않음 (European 등 동일 txt → 여러 SDF).
 - **`FontWarmupSampleText`:** Runtime 편의 상수 — Demo JSON과 맞춘 기본값이지, 모든 게임의 SSOT가 아니다.
 - **패키지 경로 비의존:** Editor 기본 Demo 폴더·Apply Demo 프로필 폴백 없음.
 
@@ -116,7 +117,7 @@ flowchart LR
 | 변경 | 확인할 경로 |
 | --- | --- |
 | Extract 버킷·sanitize·mandatory glyph·European mode | `StringJsonCharacterExtractor`, `EuropeanExtractSettings`, `FontAtlasMandatoryCharacters`, `StringTextSanitizer`, README 출력 표 |
-| Apply bake 규칙 | `FontAtlasApplier`, Window Apply 탭 |
+| Apply bake 규칙 | `FontAtlasApplier`, `FontAtlasApplyDuplicateWarnings`, Window Apply 탭 |
 | Warmup 스케줄 | `FontWarmupService`, `IFontWarmupTarget` |
 | Demo 시드 | `Assets/Demo/Editor/DemoFontProfileBootstrap` (패키지 밖) |
 | Samples | `Samples~/Demo` JSON·`SampleFontWarmupTarget` |
