@@ -8,8 +8,6 @@ using UnityEngine.UI;
 
 namespace TmpFontPipeline
 {
-    // 언어별 TMP 폰트를 스플래시·언어 변경 시점에 미리 워밍업합니다.
-    // Warmup ≠ glyph SSOT(Static 추출); 한 프레임 전 폰트 일괄 금지; input block은 소비자 책임.
     public sealed class FontWarmupService : MonoBehaviour
     {
         private const float HIDDEN_TEXT_OFFSCREEN_POSITION = 10000f;
@@ -17,7 +15,7 @@ namespace TmpFontPipeline
         private static readonly ProfilerMarker WarmupFontMarker = new("FontWarmupService.WarmupFont");
         private static readonly ProfilerMarker PreloadSpriteAssetsMarker = new("FontWarmupService.PreloadSpriteAssets");
 
-        private readonly HashSet<int> _warmedFontInstanceIds = new();
+        private readonly HashSet<EntityId> _warmedFontInstanceIds = new();
         private readonly HashSet<string> _completedLanguages = new(StringComparer.OrdinalIgnoreCase);
 
         private Coroutine _warmupCoroutine;
@@ -43,7 +41,6 @@ namespace TmpFontPipeline
             }
         }
 
-        // 지정 언어의 폰트 워밍업을 요청합니다. 이미 완료된 언어는 즉시 콜백을 호출합니다.
         public void RequestWarmup(
             string languageId,
             IFontWarmupTarget target,
@@ -70,7 +67,6 @@ namespace TmpFontPipeline
             _warmupCoroutine = StartCoroutine(CoWarmup(languageId, target));
         }
 
-        // 해당 언어의 모든 고유 폰트가 이미 워밍업되었는지 여부를 반환합니다.
         public bool IsLanguageFullyWarmed(string languageId, IFontWarmupTarget target = null)
         {
             if (string.IsNullOrEmpty(languageId) || _completedLanguages.Contains(languageId))
@@ -106,7 +102,7 @@ namespace TmpFontPipeline
                 }
 
                 WarmupFont(entry.Font, sampleText);
-                _warmedFontInstanceIds.Add(entry.Font.GetInstanceID());
+                _warmedFontInstanceIds.Add(entry.Font.GetEntityId());
                 yield return null;
             }
 
@@ -195,7 +191,7 @@ namespace TmpFontPipeline
                 }
             }
 
-            if (!_warmedFontInstanceIds.Contains(font.GetInstanceID()))
+            if (!_warmedFontInstanceIds.Contains(font.GetEntityId()))
             {
                 entries.Add(new FontWarmupEntry(font, role));
             }

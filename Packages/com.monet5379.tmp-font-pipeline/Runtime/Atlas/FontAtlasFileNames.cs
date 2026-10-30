@@ -37,14 +37,12 @@ namespace TmpFontPipeline
             nameof(FontAtlasBucket.Spanish),
         };
 
-        // Bucket+Role 조합으로 unique_chars_*.txt 파일명을 반환합니다.
         public static string ResolveFileName(FontAtlasBucket bucket, FontUsageRole role)
         {
             string suffix = role == FontUsageRole.Dialogue ? DialogueOutputSuffix : string.Empty;
             return $"{OutputPrefix}{bucket}{suffix}.txt";
         }
 
-        // CJK 버킷 enum을 추출기 JSON field name으로 변환합니다.
         public static string ToCjkFieldName(FontAtlasBucket bucket)
         {
             if (bucket != FontAtlasBucket.Korean

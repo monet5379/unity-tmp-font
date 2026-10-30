@@ -29,30 +29,30 @@ Package Manager에서 **TMP Font Pipeline** → **Samples** → **Demo** → **I
 
 `Assets/Samples/com.monet5379.tmp-font-pipeline/<version>/Demo/`에 복사된다. asmdef `TmpFontPipeline.Sample.Demo`가 `TmpFontPipeline.Runtime`을 참조한다.
 
-- `SampleData/StringUI.json`, `StringDialogue.json` — Extract 창 **JSON Folder** 예시
+- `SampleData/StringUI.json`, `StringDialogue.json` — Extract 창 **JSON 폴더** 예시
 - `SampleFontWarmupTarget` — `IFontWarmupTarget` 최소 구현 (`FontRoleCatalog` 할당 필요)
 
 **폰트·씬·Generated txt·SDF는 샘플에 없다.** Import 후 JSON 경로·출력 폴더·`FontAtlasApplyProfile` · Static 폰트는 호스트 프로젝트에서 준비한다.
 
-개발용 [GitHub 레포](https://github.com/monet5379/unity-tmp-font)는 `Assets/Demo` 놀이터만 쓰고 이 샘플 **Import는 하지 않는다** (루트 README NOTE).
+개발용 [GitHub 레포](https://github.com/monet5379/unity-tmp-font)는 `Assets/Project` · `Assets/Scenes` · `Assets/Editor` Demo 놀이터만 쓰고 이 샘플 **Import는 하지 않는다** (루트 README NOTE).
 
 ## Editor — Extract · Apply
 
-메뉴 **Tmp Font Pipeline → Open Window**.
+메뉴 **TMP 폰트 파이프라인 → 창 열기**.
 
 | 탭 | 역할 |
 | --- | --- |
-| **Extract** | **JSON Folder** · **Output Folder** (값은 `EditorPrefs`에 저장). 비어 있으면 창에서 직접 지정. `String*.json` → `unique_chars_*.txt` |
-| **Apply** | **Font Atlas Apply Profile** (`FontAtlasApplySettings` Active 경로). 엔트리 **Enabled** 후 **Apply Generated Characters** (atlas 2048 bake) |
-| **Help** | 단계 요약 (Demo 시드 버튼 없음) |
+| **추출** | **JSON 폴더** · **출력 폴더** (값은 `EditorPrefs`에 저장). 비어 있으면 창에서 직접 지정. `String*.json` → `unique_chars_*.txt` |
+| **적용** | **Apply 프로필** (`FontAtlasApplySettings` Active 경로). 엔트리 **켜** 후 **Generated 문자 적용** (atlas 2048 bake) |
+| **도움말** | 단계 요약 (Demo 시드 버튼 없음) |
 
-패키지는 `Assets/Demo` 같은 고정 경로를 넣지 않는다. JSON·Generated·프로필 경로는 **소비 프로젝트**가 정한다.
+패키지는 `Assets/Demo/...` 같은 고정 Demo 경로를 넣지 않는다. JSON·Generated·프로필 경로는 **소비 프로젝트**가 정한다.
 
-파서: 기본 `JsonUtility`. 불규칙 JSON은 Extract 탭에서 **Newtonsoft** 모드.
+파서: 기본 `JsonUtility`. 불규칙 JSON은 **추출** 탭에서 **Newtonsoft.Json** 모드.
 
 ## Runtime
 
-- **Font Role Catalog** — `Assets → Create → Tmp Font Pipeline → Font Role Catalog` (`LanguageId` + `Ui` / `Dialogue` → `TMP_FontAsset`)
+- **Font Role Catalog** — `Assets → Create → TMP 폰트 파이프라인 → 폰트 역할 카탈로그` (`LanguageId` + `Ui` / `Dialogue` → `TMP_FontAsset`)
 - **`IFontWarmupTarget`** — 게임 코드에서 구현. `FontWarmupService.RequestWarmup` (Ui → Dialogue, font 1개당 1프레임)
 - **`FontWarmupSampleText.GetForLanguage`** — 편의용 짧은 문구 (Demo JSON 키와 맞춘 **기본값**). 게임 문자열이 다르면 `GetSampleText`를 override하되, sample은 해당 role의 **추출 charset** 안에 둔다.
 

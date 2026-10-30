@@ -9,9 +9,9 @@
 - **문자 추출** — `String*.json` → `unique_chars_*.txt` (언어 버킷, Ui/Dialogue 분리, sanitize)
 - **Static atlas Apply** — Generated txt → Editor Window + `FontAtlasApplyProfile`로 TMP Static SDF bake
 - **런타임 warmup** — `FontWarmupService` + `IFontWarmupTarget` (역할별 sample, font 1개당 1프레임)
-- **Demo** (선택) — `Assets/Demo` 놀이터: `SampleScene`, 언어 전환, string key picker
+- **Demo** (선택) — `Assets/Project` · `Assets/Scenes` · `Assets/Editor` 놀이터: `SampleScene`, 언어 전환, string key picker
 
-설치 단위는 UPM **`Packages/com.monet5379.tmp-font-pipeline`**이에요. `Assets/Demo`는 이 repo 놀이터(비설치)예요.
+설치 단위는 UPM **`Packages/com.monet5379.tmp-font-pipeline`**이에요. Demo 쪽 `Assets/Project` · `Assets/Editor` · `Assets/Scenes`는 이 repo 놀이터(비설치)예요.
 
 ![파이프라인](docs/images/pipeline.ko.png)
 
@@ -44,9 +44,9 @@ https://github.com/monet5379/unity-tmp-font.git?path=/Packages/com.monet5379.tmp
 > [!NOTE]
 > **이 repo에서 확인 (선택)**
 >
-> - **개발용 repo:** `Assets/Demo` 놀이터만 써요. Package Manager에서 **Demo** 샘플 **Import는 하지 않아요** (Import한 샘플 JSON과 Demo `SampleData`가 겹치면 Extract 입력이 헷갈려요). 배포용 슬림 예시 정본은 `Samples~/Demo`이며, 소비 프로젝트는 [패키지 README — Samples](Packages/com.monet5379.tmp-font-pipeline/README.md#samples)를 따른다.
-> - Unity로 **repo 루트**를 연다 → `Assets/Demo/Scenes/SampleScene` Play → 국기 버튼·key picker로 warmup·라벨을 확인해요.
-> - `Assets/Demo`는 **패키지·설치 대상이 아니에요.** Demo 스크립트는 **`TmpFontPipeline.Runtime`** (`Packages/.../Runtime/TmpFontPipeline.Runtime.asmdef`)을 참조하는 asmdef 아래에 있어요.
+> - **개발용 repo:** `Assets/Project` · `Assets/Scenes` · `Assets/Editor` 놀이터 + `Assets/Addressables/JSON` · `Assets/Project/Font/Generated`. Package Manager에서 **Demo** 샘플 **Import는 하지 않아요** (Import JSON과 Addressables JSON이 겹치면 Extract 입력이 헷갈려요). 배포용 슬림 예시 정본은 `Samples~/Demo`이며, 소비 프로젝트는 [패키지 README — Samples](Packages/com.monet5379.tmp-font-pipeline/README.md#samples)를 따른다.
+> - Unity로 **repo 루트**를 연다 → `Assets/Scenes/SampleScene` Play → 국기 버튼·key picker로 warmup·라벨을 확인해요.
+> - Demo 스크립트·씬·Editor 시드는 **패키지·설치 대상이 아니에요.** 런타임 Demo asmdef(`Assets/Project/Scripts/TmpFontPipeline.Demo.asmdef`)는 **`TmpFontPipeline.Runtime`** (`Packages/.../Runtime/TmpFontPipeline.Runtime.asmdef`)을 참조해요.
 > - Extract JSON/출력 폴더·Apply Active Profile은 창·`EditorPrefs`·프로필 에셋으로 **직접 지정**해요. 패키지에 Demo 기본 경로는 없어요.
 
 기본 Extract 파서는 Unity `JsonUtility`예요. 불규칙 JSON은 창에서 **Newtonsoft** 모드를 쓰세요.
@@ -59,19 +59,19 @@ https://github.com/monet5379/unity-tmp-font.git?path=/Packages/com.monet5379.tmp
 - 추출 전 sanitize로 TMP 태그·placeholder·토큰을 제거해요 — JSON 원문을 그대로 아틀라스에 넣지 않아요. **런타임 표시**(Demo `DemoStringTable`)는 JSON 필드를 그대로 읽어요 — 화면용 문장은 JSON에 완성형으로 두세요(런타임 `[token]` 치환 없음).
 - UI·Dialogue 버킷을 분리해, 대화 전용 CJK가 UI 폰트 atlas를 불필요하게 키우지 않아요.
 - **Font usage role:** `Ui` = 인게임 공용(Demo Medium), `Dialogue` = 대화(Regular). weight enum이 아니라 어떤 Static asset에 어떤 extract 버킷을 넣을지 구분해요.
-- 유럽어 **기본**은 언어별 분리예요 (`English` … `Spanish`) — Ui/Dialogue 각각 `unique_chars_<Language>.txt` / `unique_chars_<Language>_StringDialogue.txt`.
-- **선택:** Extract 탭 **European Extract → MergedEuropean**이면 CJK는 그대로 언어별이고, 유럽 5개 필드는 버킷(Ui / Dialogue)마다 `unique_chars_European.txt` / `unique_chars_European_StringDialogue.txt` 합집합만 써요. Apply 프로필은 `FontAtlasBucket.European` + 역할(Ui/Dialogue)로 같은 txt를 여러 `TMP_FontAsset`에 매핑할 수 있어요.
+- **패키지 기본:** 유럽어 Extract는 **언어별** (`unique_chars_English.txt` 등). **이 repo (드래곤이즈데드와 동일):** Extract **유럽어 통합(MergedEuropean)** + EN~ES는 `Assets/Addressables/Font/EN` 공용 SDF · Apply `FontAtlasBucket.European` (Ui/Dialogue 역할별 txt 2개).
+- **선택(소비 프로젝트):** PerLanguage 모드면 Ui/Dialogue마다 언어별 txt · Apply는 `English` … `Spanish` bucket.
 - 간체 중국어 필드명은 **`SimplifiedChinese`** (정식 철자)예요.
 
 Sanitize 제거 대상: TMP style/color/bold/italic/size 태그, `<sprite…>`, `{0}` placeholder, `[token]`, 제어·레이아웃 코드포인트.
 
 Ui 버킷(`unique_chars_<Language>.txt`, Dialogue 접미사 없음) 추출 txt와 Apply bake 시 JSON에 없어도 **`_`** 를 charset에 포함해요. Dialogue 버킷 txt에는 Extract 단계에서 넣지 않고, Apply 시에만 merge해요.
 
-`Assets/Demo/Fonts/Dynamic/`은 이 추출의 대상이 **아니에요**. 예측 불가 문자열(리더보드 닉네임 등)에만 Dynamic을 쓰세요.
+`Assets/Addressables/Font/Dynamic/`은 이 추출의 대상이 **아니에요**. 예측 불가 문자열(리더보드 닉네임 등)에만 Dynamic을 쓰세요.
 
 ## 이 패키지가 아닌 것
 
-- 출시용 로컬라이즈·Font Asset 전체 템플릿 (`Assets/Demo`는 놀이터)
+- 출시용 로컬라이즈·Font Asset 전체 템플릿 (Demo 놀이터 `Assets/Project` 등은 비설치)
 - Dynamic atlas를 Static 추출 파이프라인으로 다루는 것
 - 런타임 `[token]` 치환·문자열 테이블 시스템 (표시용 문장은 JSON에 완성본으로)
 
@@ -79,58 +79,56 @@ Ui 버킷(`unique_chars_<Language>.txt`, Dialogue 접미사 없음) 추출 txt�
 
 ![Extract 탭 — JSON 폴더, 버킷 preview, Extract Unique Characters](docs/images/editor-window-extract.png)
 
-**Tmp Font Pipeline → Open Window** → **Extract** 탭.
+**TMP 폰트 파이프라인 → 창 열기** → **추출** 탭.
 
-1. **JSON Folder** · **Output Folder** 지정 (값은 `EditorPrefs`에 저장. 비어 있으면 빈 칸).
-2. 파서(`JsonUtility` 기본, 불규칙 JSON은 `Newtonsoft`) · **European Extract**(`PerLanguage` 기본, 공용 SDF면 `MergedEuropean`) 설정.
-3. **Extract Unique Characters**. `String*.json` 수정 후에는 **Extract를 다시** 실행해 Generated txt와 맞추세요.
-   - **이 repo 예:** JSON `Assets/Demo/SampleData`, 출력 `Assets/Demo/Generated` (`unique_chars_*.txt`)
+1. **JSON 폴더** · **출력 폴더** 지정 (값은 `EditorPrefs`에 저장. 이 repo는 최초 실행 시 `Assets/Project/Editor/ProjectExtractPathDefaults`가 JSON `Assets/Addressables/JSON`, 출력 `Assets/Project/Font/Generated`로 시드).
+2. 파서(`JsonUtility` 기본, 불규칙 JSON은 `Newtonsoft`) · **유럽어 추출** — **이 repo 기본 `유럽어 통합`** (`ProjectExtractPathDefaults`).
+3. **고유 문자 추출**. `String*.json` 수정 후에는 **추출을 다시** 실행해 Generated txt와 맞추세요.
+   - **이 repo 예:** JSON `Assets/Addressables/JSON`, 출력 `Assets/Project/Font/Generated` (`unique_chars_*.txt`)
 
 | 출력 | 소스 |
 |------|------|
-| `unique_chars_Korean.txt` 등 | UI / non-dialogue `String*.json` |
-| `unique_chars_*_StringDialogue.txt` | `StringDialogue*` 파일 |
-| `unique_chars_English.txt` | `English` 필드 (`String*.json`) |
-| `unique_chars_French.txt` | `French` 필드 (`String*.json`) |
-| `unique_chars_German.txt` | `German` 필드 (`String*.json`) |
-| `unique_chars_Italian.txt` | `Italian` 필드 (`String*.json`) |
-| `unique_chars_Spanish.txt` | `Spanish` 필드 (`String*.json`) |
+| `unique_chars_Korean.txt` 등 | UI / non-dialogue `String*.json` (CJK 4개 필드) |
+| `unique_chars_*_StringDialogue.txt` | `StringDialogue*` (CJK 4개 필드) |
 | `unique_chars_European.txt` | **MergedEuropean** — `English`+`French`+`German`+`Italian`+`Spanish` (Ui 버킷) |
 | `unique_chars_European_StringDialogue.txt` | **MergedEuropean** — 동일 5필드 (Dialogue 버킷) |
+| `unique_chars_English.txt` 등 | **PerLanguage** 모드일 때만 (언어별) |
 
 ## Editor — Static atlas Apply
 
 ![Apply 탭 — Font Atlas Apply Profile, Enabled 엔트리](docs/images/editor-window-apply.png)
 
-같은 창 → **Apply** 탭.
+같은 창 → **적용** 탭.
 
-1. **Font Atlas Apply Profile** 지정, 엔트리 **Enabled** 토글(또는 **Enable All** / **Disable All**).
-2. **Apply Generated Characters**.
+1. **Apply 프로필** 지정, 엔트리 **켜** 토글(또는 **전체 켜기** / **전체 끄기**).
+2. **Generated 문자 적용**.
    - Enabled 항목 중 **동일 `TMP_FontAsset`이 두 번 이상**이면 Console·Apply 탭에 경고해요 (실수 방지). `MergedEuropean`처럼 **서로 다른 폰트**에 같은 txt를 bake하는 구성은 Bucket만 같고 폰트가 다르면 경고하지 않아요.
    - **Ping**은 Project 창에서 프로필 에셋을 하이라이트해요.
    - Apply 시 대상 atlas 크기를 `2048x2048`로 맞춘 뒤 bake해요.
 3. 대상 Font Asset의 Atlas Population Mode = **Static** 확인.
 
-**Help** 탭은 Extract → Apply 단계 요약만 보여줘요 (Demo 시드 버튼 없음).
+**도움말** 탭은 추출 → 적용 단계 요약만 보여줘요 (Demo 시드 버튼 없음).
 
-**이 repo — Demo 시드** (`Assets/Demo/Editor/DemoFontProfileBootstrap`):
+**이 repo — Demo 시드** (`Assets/Editor/DemoFontProfileBootstrap`):
 
-메뉴 **Tmp Font Pipeline → Font Atlas Apply Profile → Create Demo Assets** — `Assets/Demo`에 `FontAtlasApplyProfile` + `FontRoleCatalog` 생성·시드, Active Profile 설정. 프로필이 이미 있으면 demo 바인딩으로 **덮어씀** (`Enabled` 전부 true). 유럽 분리 이전 프로필이면 같은 메뉴를 다시 실행(재시드)하세요.
+메뉴 **TMP 폰트 파이프라인 → 폰트 아틀라스 Apply 프로필 → 데모 에셋 생성** — `Assets/Project/Font/FontAtlasApplyProfile` + `Assets/Addressables/Scriptable/FontRoleCatalog` 시드, Active Profile 설정. 프로필이 이미 있으면 demo 바인딩으로 **덮어씀**. 유럽어 PerLanguage 프로필이면 같은 메뉴를 다시 실행(재시드)하세요.
 
-Demo 매핑 (Create Demo Assets 후):
+Demo 매핑 (Create Demo Assets 후, 드래곤이즈데드 `Font_European` 패턴):
 
-| Bucket | Role | Demo Static asset |
-|--------|------|-------------------|
-| Korean (etc.) | Ui | `*/NotoSans*-Medium SDF` |
-| Korean (etc.) | Dialogue | `*/NotoSans*-Regular SDF` |
-| English/French/German/Italian/Spanish | Ui | `EN/FR/DE/IT/ES/*-Medium SDF` |
-| English/French/German/Italian/Spanish | Dialogue | `EN/FR/DE/IT/ES/*-Regular SDF` |
+| Bucket | Role | Static asset |
+|--------|------|----------------|
+| Korean / JP / SC / TC | Ui | `Addressables/Font/<locale>/NotoSans*-Medium SDF` |
+| Korean / JP / SC / TC | Dialogue | `…/NotoSans*-Regular SDF` |
+| **European** (EN~ES 공통) | Ui | `Addressables/Font/EN/NotoSans-Medium SDF` |
+| **European** | Dialogue | `Addressables/Font/EN/NotoSans-Regular SDF` |
+
+`FontRoleCatalog` — EN·FR·DE·IT·ES languageId는 **동일** Ui/Dialogue SDF 참조 (런타임 언어 전환만 바뀜).
 
 ## Runtime — 폰트 조회
 
-**Font Role Catalog** (`Assets → Create → Tmp Font Pipeline → Font Role Catalog`) — `LanguageId` + `Ui` / `Dialogue` → `TMP_FontAsset`.
+**Font Role Catalog** (`Assets → Create → TMP 폰트 파이프라인 → 폰트 역할 카탈로그`) — `LanguageId` + `Ui` / `Dialogue` → `TMP_FontAsset`.
 
-이 repo에서는 **Create Demo Assets** 메뉴로 `Assets/Demo`에 catalog가 시드돼요. 소비 프로젝트는 자기 `FontRoleCatalog`를 만든다.
+이 repo에서는 **Create Demo Assets** 메뉴로 `Assets/Addressables/Scriptable/FontRoleCatalog`가 시드돼요. 소비 프로젝트는 자기 `FontRoleCatalog`를 만든다.
 
 ## Runtime — 폰트 warmup
 
@@ -164,9 +162,9 @@ public sealed class MyFontWarmupTarget : IFontWarmupTarget
 
 놀이터 전용이에요. 출시용 로컬라이즈·Font Asset 템플릿이 아니에요.
 
-1. **Tmp Font Pipeline → Font Atlas Apply Profile → Create Demo Assets** (1회).
-2. **Extract** 후 **Apply** — Static SDF가 `Assets/Demo/Generated/`와 일치하는지 확인.
-3. **`Assets/Demo/Scenes/SampleScene.unity`** 열고 Play.
+1. **TMP 폰트 파이프라인 → 폰트 아틀라스 Apply 프로필 → 데모 에셋 생성** (1회).
+2. **Extract** 후 **Apply** — Static SDF가 `Assets/Project/Font/Generated/`와 일치하는지 확인.
+3. **`Assets/Scenes/SampleScene.unity`** 열고 Play.
 
 | 오브젝트 | 스크립트 | 역할 |
 |----------|----------|------|
@@ -184,7 +182,7 @@ public sealed class MyFontWarmupTarget : IFontWarmupTarget
 
 ![SampleScene — JP](docs/images/scene-jp.png)
 
-데모 폰트 라이선스: [LICENSE-AND-CREDITS.md](Assets/Demo/Fonts/LICENSE-AND-CREDITS.md).
+Static·Dynamic Noto 폰트 에셋: `Assets/Addressables/Font/` (OFL, 각 TTF `.meta` 참고).
 
 ## 관련
 

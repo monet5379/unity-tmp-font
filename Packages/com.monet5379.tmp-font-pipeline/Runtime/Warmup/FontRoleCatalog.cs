@@ -5,14 +5,13 @@ using UnityEngine;
 
 namespace TmpFontPipeline
 {
-    [CreateAssetMenu(fileName = "FontRoleCatalog", menuName = "Tmp Font Pipeline/Font Role Catalog")]
+    [CreateAssetMenu(fileName = "FontRoleCatalog", menuName = "TMP 폰트 파이프라인/폰트 역할 카탈로그")]
     public sealed class FontRoleCatalog : ScriptableObject
     {
         [SerializeField] private LanguageFontRoleGroup[] _languages = Array.Empty<LanguageFontRoleGroup>();
 
         public IReadOnlyList<LanguageFontRoleGroup> Languages => _languages;
 
-        // languageId와 역할에 맞는 Static Font Asset을 반환합니다.
         public TMP_FontAsset GetFont(string languageId, FontUsageRole role)
         {
             if (string.IsNullOrEmpty(languageId))
@@ -34,7 +33,6 @@ namespace TmpFontPipeline
             return null;
         }
 
-        // 워밍업 대상 Ui·Dialogue Font Asset 목록을 반환합니다.
         public IReadOnlyList<TMP_FontAsset> GetFontsForWarmup(string languageId)
         {
             var fonts = new List<TMP_FontAsset>(2);

@@ -27,7 +27,7 @@
 - **Breaking (레이아웃):** `Assets/TmpFontPipeline` 복사 설치 대신 Package Manager 설치. Git 루트 = Unity 프로젝트 (`project/` 분리 없음).
 - 패키지에서 Demo 기본 경로·**Create Demo Assets** UI 제거. Extract JSON/출력은 `EditorPrefs`; Apply Active Profile은 지정 경로만 (Demo 폴백 없음).
 - `FontAtlasApplyProfile._generatedFolder` 기본값 빈 문자열.
-- Demo 부트스트랩(`DemoFontProfileBootstrap`)은 이 개발 repo의 `Assets/Demo/Editor/` 전용.
+- Demo 부트스트랩(`DemoFontProfileBootstrap`)은 이 개발 repo의 `Assets/Editor/` 전용.
 
 ### Notes
 

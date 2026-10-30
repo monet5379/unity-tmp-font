@@ -2,10 +2,8 @@ using System;
 
 namespace TmpFontPipeline
 {
-    // Static atlas에 넣을 짧은 sample. 전 glyph 보장이 아님 — 언어별 atlas에 있는 글자만 사용.
     public static class FontWarmupSampleText
     {
-        // Demo StringUI "Confirm"과 동일한 문구 — unique_chars_* 추출 결과에 포함됨.
         public const string Korean = "확인";
         public const string Japanese = "確定";
         public const string SimplifiedChinese = "确认";
@@ -16,7 +14,6 @@ namespace TmpFontPipeline
         public const string Italian = "CONFERMA";
         public const string Spanish = "CONFIRMAR";
 
-        // Demo StringDialogue "dlg_intro"와 동일 — unique_chars_*_StringDialogue 추출 결과에 포함됨.
         public const string DialogueKorean = "어서 오세요, 모험가.";
         public const string DialogueJapanese = "ようこそ、冒険者。";
         public const string DialogueSimplifiedChinese = "欢迎，冒险者。";
@@ -27,7 +24,6 @@ namespace TmpFontPipeline
         public const string DialogueItalian = "Benvenuto, avventuriero.";
         public const string DialogueSpanish = "Bienvenido, aventurero.";
 
-        // languageId(Catalog 단축형 또는 필드명)와 역할에 맞는 warmup sample을 반환합니다.
         public static string GetForLanguage(string languageId, FontUsageRole role)
         {
             if (string.IsNullOrEmpty(languageId))

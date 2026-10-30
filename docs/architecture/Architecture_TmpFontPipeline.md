@@ -20,13 +20,13 @@ TMP Font Pipeline은 `Packages/com.monet5379.tmp-font-pipeline/` UPM 패키지�
 - **Apply:** Generated txt → `FontAtlasApplyProfile` 엔트리 → Static `TMP_FontAsset` Character Table bake (Editor Window)
 - **Warmup:** 역할별 sample text로 숨김 draw — **전 glyph 보장 아님**
 - UPM `Samples~/Demo` — JSON 예시 · `IFontWarmupTarget` 스크립트 (Import용)
-- 이 repo `Assets/Demo` — 씬·폰트·Generated·부트스트랩 (**설치·복사 대상 아님**)
+- 이 repo `Assets/Project` · `Assets/Editor` · `Assets/Scenes` — Demo 스크립트·씬·시드; JSON·Static 폰트·Generated는 `Assets/Addressables` · `Assets/Project/Font` (**설치·복사 대상 아님**)
 
 ### 제외 범위 (Out of Scope)
 
 - Dynamic atlas를 Static 추출 파이프라인으로 다루는 것
 - 런타임 `[token]` 치환·문자열 테이블 시스템
-- 출시용 로컬라이즈·Font Asset 전체 템플릿 (`Assets/Demo`는 놀이터)
+- 출시용 로컬라이즈·Font Asset 전체 템플릿 (Demo 놀이터 `Assets/Project` 등)
 - 상세: [루트 README — 이 패키지가 아닌 것](../../README.md#이-패키지가-아닌-것)
 
 ## 주요 타입과 관계 (Key Types & Relationships)
@@ -36,9 +36,10 @@ TMP Font Pipeline은 `Packages/com.monet5379.tmp-font-pipeline/` UPM 패키지�
 | `Packages/.../Runtime/` | `TmpFontPipeline.Runtime` | 루트 asmdef만. 소스는 `Atlas/` · `Warmup/` |
 | `Packages/.../Runtime/Atlas/` | (동일) | `FontAtlasApplyProfile`, `FontAtlasBucket`, `FontUsageRole`, `FontAtlasFileNames` — Extract→Apply 계약 |
 | `Packages/.../Runtime/Warmup/` | (동일) | `FontWarmupService`, `IFontWarmupTarget`, `FontRoleCatalog`, `FontWarmupSampleText` |
-| `Packages/.../Editor/` | `TmpFontPipeline.Editor` | `TmpFontPipelineWindow`, Extract/Apply, JSON 파서, `FontAtlasApplier` |
+| `Packages/.../Editor/` | `TmpFontPipeline.Editor` | 루트 asmdef. `UI/` · `Extract/` · `Apply/` (아래 레이아웃) |
 | `Packages/.../Samples~/Demo/` | `TmpFontPipeline.Sample.Demo` | 예시 JSON · `SampleFontWarmupTarget` — Package Manager **Import** |
-| `Assets/Demo/` | `TmpFontPipeline.Demo` · `TmpFontPipeline.Demo.Editor` | `SampleScene`, Noto SDF, Generated, `DemoFontProfileBootstrap` — **비설치** · 이 repo에서는 샘플 **Import 안 함** |
+| `Assets/Project/Scripts/` · `Assets/Editor/` | `TmpFontPipeline.Demo` · `TmpFontPipeline.Demo.Editor` | Demo 런타임 · `DemoFontProfileBootstrap`; JSON·Static SDF는 `Assets/Addressables`, Generated·Apply 프로필은 `Assets/Project/Font` — **비설치** · 샘플 **Import 안 함** |
+| `Assets/Scenes/` | (씬) | `SampleScene` — Demo Play |
 | `Assets/TextMesh Pro/` | (기본 어셈블리) | 개발 repo TMP Essentials — **패키지 밖** |
 
 | 타입 | 레이어 | 책임 |
@@ -49,6 +50,19 @@ TMP Font Pipeline은 `Packages/com.monet5379.tmp-font-pipeline/` UPM 패키지�
 | `FontRoleCatalog` | Runtime (SO) | `languageId` + `FontUsageRole` → `TMP_FontAsset` |
 | `FontWarmupService` | Runtime | `RequestWarmup` — Ui → Dialogue, supersede, 1 font/frame |
 | `IFontWarmupTarget` | Runtime (소비자) | warmup 대상 font · 역할별 sample text |
+
+### Editor 레이아웃
+
+```text
+Editor/
+├── TmpFontPipeline.Editor.asmdef
+├── UI/           TmpFontPipelineWindow
+├── Extract/      StringJsonCharacterExtractor, StringTextSanitizer, EuropeanExtract*, FontAtlasMandatoryCharacters
+│   └── Json/     IStringTableRow, JsonParser*, JsonUtility/Newtonsoft StringTableParser
+└── Apply/        FontAtlasApplier, FontAtlasApplySettings, FontAtlasApplyDuplicateWarnings
+```
+
+네임스페이스는 전부 `TmpFontPipeline.Editor` (하위 폴더와 무관).
 
 ```mermaid
 flowchart LR
@@ -76,15 +90,15 @@ flowchart LR
 
 ### Extract (Editor)
 
-1. **Tmp Font Pipeline → Open Window → Extract**에서 JSON Folder · Output Folder 지정 (`EditorPrefs` persist).
-2. **Extract Unique Characters** — `String*.json` / `StringDialogue*` 스can, sanitize, 언어·Ui/Dialogue 버킷별 `unique_chars_*.txt` 출력.
+1. **TMP 폰트 파이프라인 → 창 열기 → 추출**에서 JSON 폴더 · 출력 폴더 지정 (`EditorPrefs` persist).
+2. **고유 문자 추출** — `String*.json` / `StringDialogue*` 스can, sanitize, 언어·Ui/Dialogue 버킷별 `unique_chars_*.txt` 출력.
 3. 문자셋 **SSOT** = 이 txt → Apply 후 TMP Character Table. Warmup sample text는 SSOT가 아니다.
 
 ### Apply (Editor)
 
 1. 소비자가 `FontAtlasApplyProfile` 생성 (`_generatedFolder` = Generated txt가 있는 프로젝트 경로).
 2. Apply 탭에서 Active Profile 지정 (`FontAtlasApplySettings.ActiveProfilePath`), 엔트리 **Enabled** 선택.
-3. **Apply Generated Characters** — 대상 Static font atlas 2048, Population Mode **Static** 전제.
+3. **Generated 문자 적용** — 대상 Static font atlas 2048, Population Mode **Static** 전제.
 
 ### Warmup (Runtime)
 
@@ -94,11 +108,11 @@ flowchart LR
 
 ## Demo vs Samples~
 
-| | `Samples~/Demo` (UPM Import) | `Assets/Demo` (이 repo만) |
+| | `Samples~/Demo` (UPM Import) | 이 repo Demo (`Assets/Project` · `Assets/Editor` · `Assets/Scenes`) |
 | --- | --- | --- |
-| 목적 | 소비 프로젝트에 JSON·스크립트 예시 복사 | 전체 놀이터 (씬·폰트·Generated·SDF) |
-| Create Demo Assets | 없음 | `DemoFontProfileBootstrap` — 메뉴 **Tmp Font Pipeline → Font Atlas Apply Profile → Create Demo Assets** |
-| Extract 기본 경로 | Import 후 사용자 지정 | `Assets/Demo/SampleData` → `Assets/Demo/Generated` (창에서 설정) |
+| 목적 | 소비 프로젝트에 JSON·스크립트 예시 복사 | 놀이터 스크립트·씬; JSON·Static 폰트는 `Assets/Addressables`, Generated·Apply는 `Assets/Project/Font` |
+| Create Demo Assets | 없음 | `DemoFontProfileBootstrap` — 메뉴 **TMP 폰트 파이프라인 → 폰트 아틀라스 Apply 프로필 → 데모 에셋 생성** |
+| Extract 기본 경로 | Import 후 사용자 지정 | 이 repo: `Assets/Addressables/JSON` → `Assets/Project/Font/Generated` (`ProjectExtractPathDefaults` + EditorPrefs) |
 | Package Manager Import | 소비자 권장 | **개발 repo는 Import하지 않음** ([README NOTE](../../README.md)) |
 
 ## 불변조건과 주의점 (Invariants & Gotchas)
@@ -107,7 +121,7 @@ flowchart LR
 
 - **Charset SSOT:** 추출 txt → Static atlas. Warmup sample은 “언제 그릴지”만 — missing glyph 방지는 sample이 해당 버킷 charset 안에 있어야 한다.
 - **Ui / Dialogue 버킷 분리:** `unique_chars_*` vs `unique_chars_*_StringDialogue` — role별 sample은 **같은 추출 버킷**에서 고른다.
-- **European Extract:** 기본 `PerLanguage` per-field txt. `MergedEuropean`(EditorPrefs)은 CJK 개별 + `unique_chars_European*` 합집합; Apply는 `FontAtlasBucket.European`.
+- **European Extract:** 패키지 기본 `PerLanguage`. **이 repo**는 `MergedEuropean`(EditorPrefs) — CJK 개별 + `unique_chars_European*`; Apply·런타임은 EN 공용 SDF + `FontAtlasBucket.European` (드래곤이즈데드 `Font_European` / `unique_chars_European.txt`와 동일 계약).
 - **Sanitize:** Extract 전 TMP 태그·placeholder·`[token]` 제거. **런타임 표시**는 JSON 필드 그대로 (완성 문장 SSOT).
 - **Mandatory glyph:** Ui 버킷 Extract txt + Apply bake 시 `FontAtlasMandatoryCharacters`(`_`만). Dialogue Extract txt에는 주입하지 않음 — Apply는 txt 읽기 후 merge.
 - **Apply duplicate font:** Enabled 엔트리에서 동일 `TMP_FontAsset` 경로가 반복되면 경고(`FontAtlasApplyDuplicateWarnings`). Bucket/Role 중복만으로는 경고하지 않음 (European 등 동일 txt → 여러 SDF).
@@ -118,10 +132,10 @@ flowchart LR
 
 | 변경 | 확인할 경로 |
 | --- | --- |
-| Extract 버킷·sanitize·mandatory glyph·European mode | `StringJsonCharacterExtractor`, `EuropeanExtractSettings`, `FontAtlasMandatoryCharacters`, `StringTextSanitizer`, README 출력 표 |
-| Apply bake 규칙 · Apply SO·파일명 계약 | `Runtime/Atlas/`, `FontAtlasApplier`, `FontAtlasApplyDuplicateWarnings`, Window Apply 탭 |
+| Extract 버킷·sanitize·mandatory glyph·European mode | `Editor/Extract/`, `Editor/Extract/Json/`, README 출력 표 |
+| Apply bake 규칙 · Apply SO·파일명 계약 | `Runtime/Atlas/`, `Editor/Apply/`, `Editor/UI/` Apply 탭 |
 | Warmup 스케줄 | `Runtime/Warmup/`, `FontWarmupService`, `IFontWarmupTarget` |
-| Demo 시드 | `Assets/Demo/Editor/DemoFontProfileBootstrap` (패키지 밖) |
+| Demo 시드 | `Assets/Editor/DemoFontProfileBootstrap` (패키지 밖) |
 | Samples | `Samples~/Demo` JSON·`SampleFontWarmupTarget` |
 | public API · asmdef 이름 | README 불변조건 · 이 문서 표 |
 

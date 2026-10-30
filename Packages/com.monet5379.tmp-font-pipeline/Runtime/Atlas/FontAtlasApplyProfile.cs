@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace TmpFontPipeline
 {
-    [CreateAssetMenu(fileName = "FontAtlasApplyProfile", menuName = "Tmp Font Pipeline/Font Atlas Apply Profile")]
+    [CreateAssetMenu(fileName = "FontAtlasApplyProfile", menuName = "TMP 폰트 파이프라인/폰트 아틀라스 Apply 프로필")]
     public sealed class FontAtlasApplyProfile : ScriptableObject
     {
         [SerializeField] private string _generatedFolder = string.Empty;
@@ -14,7 +14,6 @@ namespace TmpFontPipeline
         public string GeneratedFolder => _generatedFolder;
         public IReadOnlyList<FontAtlasApplyEntry> Entries => _entries;
 
-        // 항목의 Generated txt asset 경로를 반환합니다. Generated Folder가 비어 있으면 null.
         public string GetResolvedPath(FontAtlasApplyEntry entry)
         {
             if (string.IsNullOrWhiteSpace(_generatedFolder))
