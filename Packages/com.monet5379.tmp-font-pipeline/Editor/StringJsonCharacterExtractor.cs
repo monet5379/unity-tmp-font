@@ -166,13 +166,16 @@ namespace TmpFontPipeline.Editor
         {
             _ = summary.AppendLine($"[{logLabel}] {bucket.ParsedFileCount} files, {bucket.ParsedEntryCount} entries");
 
+            bool includeMandatoryGlyphs = !FontAtlasFileNames.IsDialogueFileNameSuffix(fileNameSuffix);
+
             for (int i = 0; i < AllLanguageFieldNames.Length; i++)
             {
                 string fieldName = AllLanguageFieldNames[i];
                 string outputFile = WriteCodePointsFile(
                     outputDir,
                     $"{FontAtlasFileNames.OutputPrefix}{fieldName}{fileNameSuffix}.txt",
-                    bucket.LanguageCodePoints[fieldName]);
+                    bucket.LanguageCodePoints[fieldName],
+                    includeMandatoryGlyphs);
                 _ = summary.AppendLine(
                     $"  {fieldName}: {bucket.LanguageCodePoints[fieldName].Count} chars -> {ToAssetPath(outputFile)}");
             }
@@ -181,8 +184,14 @@ namespace TmpFontPipeline.Editor
         private static string WriteCodePointsFile(
             string outputDir,
             string fileName,
-            HashSet<int> codePoints)
+            HashSet<int> codePoints,
+            bool includeMandatoryGlyphs = true)
         {
+            if (includeMandatoryGlyphs)
+            {
+                StringTextSanitizer.AddCodePoints(codePoints, FontAtlasMandatoryCharacters.AtlasCharacters);
+            }
+
             string outputFilePath = Path.Combine(outputDir, fileName);
             string content = CodePointsToString(codePoints);
             File.WriteAllText(outputFilePath, content, new UTF8Encoding(false));

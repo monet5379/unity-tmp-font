@@ -106,6 +106,7 @@ flowchart LR
 - **Charset SSOT:** 추출 txt → Static atlas. Warmup sample은 “언제 그릴지”만 — missing glyph 방지는 sample이 해당 버킷 charset 안에 있어야 한다.
 - **Ui / Dialogue 버킷 분리:** `unique_chars_*` vs `unique_chars_*_StringDialogue` — role별 sample은 **같은 추출 버킷**에서 고른다.
 - **Sanitize:** Extract 전 TMP 태그·placeholder·`[token]` 제거. **런타임 표시**는 JSON 필드 그대로 (완성 문장 SSOT).
+- **Mandatory glyph:** Ui 버킷 Extract txt + Apply bake 시 `FontAtlasMandatoryCharacters`(`_`만). Dialogue Extract txt에는 주입하지 않음 — Apply는 txt 읽기 후 merge.
 - **`FontWarmupSampleText`:** Runtime 편의 상수 — Demo JSON과 맞춘 기본값이지, 모든 게임의 SSOT가 아니다.
 - **패키지 경로 비의존:** Editor 기본 Demo 폴더·Apply Demo 프로필 폴백 없음.
 
@@ -113,7 +114,7 @@ flowchart LR
 
 | 변경 | 확인할 경로 |
 | --- | --- |
-| Extract 버킷·sanitize | `StringJsonCharacterExtractor`, `StringTextSanitizer`, README 출력 표 |
+| Extract 버킷·sanitize·mandatory glyph | `StringJsonCharacterExtractor`, `FontAtlasMandatoryCharacters`, `StringTextSanitizer`, README 출력 표 |
 | Apply bake 규칙 | `FontAtlasApplier`, Window Apply 탭 |
 | Warmup 스케줄 | `FontWarmupService`, `IFontWarmupTarget` |
 | Demo 시드 | `Assets/Demo/Editor/DemoFontProfileBootstrap` (패키지 밖) |

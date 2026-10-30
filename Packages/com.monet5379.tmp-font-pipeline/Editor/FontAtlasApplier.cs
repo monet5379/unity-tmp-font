@@ -158,7 +158,8 @@ namespace TmpFontPipeline.Editor
                 return ApplyEntryResult.Failed;
             }
 
-            string chars = File.ReadAllText(absolutePath, Encoding.UTF8);
+            string chars = FontAtlasMandatoryCharacters.MergeIntoCharacterString(
+                File.ReadAllText(absolutePath, Encoding.UTF8));
             LogApplyStep(context, StepReadGeneratedTxt, "read generated txt", true, $"{assetPath} ({chars.Length} chars)");
             LogCharacterDiff(entry, entry.FontAsset, chars);
 

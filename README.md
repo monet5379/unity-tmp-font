@@ -64,6 +64,8 @@ https://github.com/monet5379/unity-tmp-font.git?path=/Packages/com.monet5379.tmp
 
 Sanitize 제거 대상: TMP style/color/bold/italic/size 태그, `<sprite…>`, `{0}` placeholder, `[token]`, 제어·레이아웃 코드포인트.
 
+Ui 버킷(`unique_chars_<Language>.txt`, Dialogue 접미사 없음) 추출 txt와 Apply bake 시 JSON에 없어도 **`_`** 를 charset에 포함해요. Dialogue 버킷 txt에는 Extract 단계에서 넣지 않고, Apply 시에만 merge해요.
+
 `Assets/Demo/Fonts/Dynamic/`은 이 추출의 대상이 **아니에요**. 예측 불가 문자열(리더보드 닉네임 등)에만 Dynamic을 쓰세요.
 
 ## 이 패키지가 아닌 것
