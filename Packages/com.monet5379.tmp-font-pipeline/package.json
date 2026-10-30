@@ -1,6 +1,6 @@
 {
   "name": "com.monet5379.tmp-font-pipeline",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "displayName": "TMP Font Pipeline",
   "description": "로컬라이즈 JSON에서 고유 글자 추출, Static atlas Apply, 런타임 TMP 폰트 워밍업",
   "unity": "6000.3",

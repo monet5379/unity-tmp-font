@@ -4,9 +4,23 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-30
+
 ### Added
 
 - UPM Samples **Demo (Noto + Baked Atlas)** (`Samples~/DemoWithFonts`) — Noto SDF/TTF · Generated txt · Apply/Catalog · Import 후 **Noto 데모 경로 연결** 메뉴. 슬림 샘플 displayName을 **Demo (JSON + Warmup)** 으로 구분.
+- Extract 유럽어 **MergedEuropean** 모드 — `unique_chars_European*.txt` 출력 · Apply `FontAtlasBucket.European` (기본 추출은 언어별 `PerLanguage`).
+- Ui 버킷 Extract·Apply에 필수 `_` — JSON에 없어도 Static charset에 포함 (`FontAtlasMandatoryCharacters`; Dialogue Extract txt에는 주입하지 않음).
+- Apply — Enabled 엔트리가 같은 `TMP_FontAsset`을 두 번 이상 참조하면 Console·Apply 탭 경고 (Apply 실행은 계속).
+
+### Changed
+
+- `Runtime/` 소스를 **Atlas** · **Warmup** 폴더로 분리 — asmdef·`TmpFontPipeline` public API는 동일.
+- ScriptableObject Create 메뉴 경로 한글화 (`TMP 폰트 파이프라인/...`).
+
+### Notes
+
+- Git URL pin: `https://github.com/monet5379/unity-tmp-font.git?path=/Packages/com.monet5379.tmp-font-pipeline#v0.2.0`
 
 ## [0.1.1] - 2026-10-30
 
