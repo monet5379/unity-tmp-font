@@ -89,6 +89,14 @@ namespace TmpFontPipeline.Editor
                 JsonParserSettings.Mode = parserMode;
             }
 
+            EuropeanExtractMode europeanMode = (EuropeanExtractMode)EditorGUILayout.EnumPopup(
+                "European Extract",
+                EuropeanExtractSettings.Mode);
+            if (europeanMode != EuropeanExtractSettings.Mode)
+            {
+                EuropeanExtractSettings.Mode = europeanMode;
+            }
+
             DrawExtractPreview();
 
             bool pathsConfigured = !string.IsNullOrWhiteSpace(_jsonSearchPath)
@@ -319,8 +327,9 @@ namespace TmpFontPipeline.Editor
         {
             EditorGUILayout.HelpBox(
                 "1. Set JSON Folder and Output Folder on Extract (paths persist in EditorPrefs).\n" +
-                "2. Extract String*.json → unique_chars_*.txt\n" +
+                "2. Extract String*.json → unique_chars_*.txt (European Extract: PerLanguage default, or MergedEuropean)\n" +
                 "3. Assign Apply Profile, toggle Enabled entries, Apply to Static TMP fonts (atlas 2048)\n" +
+                "MergedEuropean: use FontAtlasBucket.European on Apply entries (same txt → multiple fonts OK).\n" +
                 "Detail logs are written to the Console.",
                 MessageType.None);
         }

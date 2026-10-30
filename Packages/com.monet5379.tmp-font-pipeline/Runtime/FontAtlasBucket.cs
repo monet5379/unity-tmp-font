@@ -12,5 +12,6 @@ namespace TmpFontPipeline
         German,
         Italian,
         Spanish,
+        European,
     }
 }

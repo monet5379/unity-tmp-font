@@ -59,7 +59,8 @@ https://github.com/monet5379/unity-tmp-font.git?path=/Packages/com.monet5379.tmp
 - 추출 전 sanitize로 TMP 태그·placeholder·토큰을 제거해요 — JSON 원문을 그대로 아틀라스에 넣지 않아요. **런타임 표시**(Demo `DemoStringTable`)는 JSON 필드를 그대로 읽어요 — 화면용 문장은 JSON에 완성형으로 두세요(런타임 `[token]` 치환 없음).
 - UI·Dialogue 버킷을 분리해, 대화 전용 CJK가 UI 폰트 atlas를 불필요하게 키우지 않아요.
 - **Font usage role:** `Ui` = 인게임 공용(Demo Medium), `Dialogue` = 대화(Regular). weight enum이 아니라 어떤 Static asset에 어떤 extract 버킷을 넣을지 구분해요.
-- 유럽어는 언어별로 완전 분리해요 (`English`, `French`, `German`, `Italian`, `Spanish`) — Ui/Dialogue 모두 각자 `unique_chars_<Language>.txt` / `unique_chars_<Language>_StringDialogue.txt`를 사용해요.
+- 유럽어 **기본**은 언어별 분리예요 (`English` … `Spanish`) — Ui/Dialogue 각각 `unique_chars_<Language>.txt` / `unique_chars_<Language>_StringDialogue.txt`.
+- **선택:** Extract 탭 **European Extract → MergedEuropean**이면 CJK는 그대로 언어별이고, 유럽 5개 필드는 버킷(Ui / Dialogue)마다 `unique_chars_European.txt` / `unique_chars_European_StringDialogue.txt` 합집합만 써요. Apply 프로필은 `FontAtlasBucket.European` + 역할(Ui/Dialogue)로 같은 txt를 여러 `TMP_FontAsset`에 매핑할 수 있어요.
 - 간체 중국어 필드명은 **`SimplifiedChinese`** (정식 철자)예요.
 
 Sanitize 제거 대상: TMP style/color/bold/italic/size 태그, `<sprite…>`, `{0}` placeholder, `[token]`, 제어·레이아웃 코드포인트.
@@ -81,7 +82,7 @@ Ui 버킷(`unique_chars_<Language>.txt`, Dialogue 접미사 없음) 추출 txt�
 **Tmp Font Pipeline → Open Window** → **Extract** 탭.
 
 1. **JSON Folder** · **Output Folder** 지정 (값은 `EditorPrefs`에 저장. 비어 있으면 빈 칸).
-2. 파서(`JsonUtility` 기본, 불규칙 JSON은 `Newtonsoft`) 설정.
+2. 파서(`JsonUtility` 기본, 불규칙 JSON은 `Newtonsoft`) · **European Extract**(`PerLanguage` 기본, 공용 SDF면 `MergedEuropean`) 설정.
 3. **Extract Unique Characters**. `String*.json` 수정 후에는 **Extract를 다시** 실행해 Generated txt와 맞추세요.
    - **이 repo 예:** JSON `Assets/Demo/SampleData`, 출력 `Assets/Demo/Generated` (`unique_chars_*.txt`)
 
@@ -94,6 +95,8 @@ Ui 버킷(`unique_chars_<Language>.txt`, Dialogue 접미사 없음) 추출 txt�
 | `unique_chars_German.txt` | `German` 필드 (`String*.json`) |
 | `unique_chars_Italian.txt` | `Italian` 필드 (`String*.json`) |
 | `unique_chars_Spanish.txt` | `Spanish` 필드 (`String*.json`) |
+| `unique_chars_European.txt` | **MergedEuropean** — `English`+`French`+`German`+`Italian`+`Spanish` (Ui 버킷) |
+| `unique_chars_European_StringDialogue.txt` | **MergedEuropean** — 동일 5필드 (Dialogue 버킷) |
 
 ## Editor — Static atlas Apply
 

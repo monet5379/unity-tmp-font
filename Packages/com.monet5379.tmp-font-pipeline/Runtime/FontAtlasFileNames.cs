@@ -62,5 +62,18 @@ namespace TmpFontPipeline
         {
             return string.Equals(fileNameSuffix, DialogueOutputSuffix, StringComparison.Ordinal);
         }
+
+        public static bool IsEuropeanLanguageFieldName(string fieldName)
+        {
+            for (int i = 0; i < EuropeanLanguageFieldNames.Length; i++)
+            {
+                if (string.Equals(fieldName, EuropeanLanguageFieldNames[i], StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

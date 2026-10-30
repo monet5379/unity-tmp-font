@@ -110,15 +110,21 @@ namespace TmpFontPipeline.Editor
             for (int i = 0; i < entries.Count; i++)
             {
                 FontAtlasApplyEntry entry = entries[i];
-                if (entry == null || !entry.Enabled)
+                if (entry == null || !entry.Enabled || entry.FontAsset == null)
                 {
                     continue;
                 }
 
-                string key = $"{entry.Bucket}:{entry.Role}";
+                string key = AssetDatabase.GetAssetPath(entry.FontAsset);
+                if (string.IsNullOrEmpty(key))
+                {
+                    key = entry.FontAsset.GetInstanceID().ToString();
+                }
+
                 if (!seen.Add(key))
                 {
-                    Debug.LogWarning($"Duplicate apply entry: {key}");
+                    Debug.LogWarning(
+                        $"Tmp Font Pipeline: duplicate apply entry (same TMP_FontAsset): {entry.FontAsset.name} ({key})");
                 }
             }
         }
