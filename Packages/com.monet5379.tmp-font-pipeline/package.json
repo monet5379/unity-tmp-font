@@ -10,9 +10,14 @@
   },
   "samples": [
     {
-      "displayName": "Demo",
-      "description": "String*.json 예시와 IFontWarmupTarget 최소 스크립트. Package Manager에서 Import 후 JSON 경로·FontRoleCatalog를 프로젝트에 맞게 설정한다.",
+      "displayName": "Demo (JSON + Warmup)",
+      "description": "String*.json 예시와 IFontWarmupTarget 최소 스크립트. Import 후 JSON·출력·FontRoleCatalog·Static 폰트는 호스트 프로젝트에서 준비한다.",
       "path": "Samples~/Demo"
+    },
+    {
+      "displayName": "Demo (Noto + Baked Atlas)",
+      "description": "슬림 Demo와 동일 JSON + Noto Static SDF·Generated txt·Apply 프로필·FontRoleCatalog. Import 후 메뉴 TMP 폰트 파이프라인 → 샘플 → Noto 데모 경로 연결.",
+      "path": "Samples~/DemoWithFonts"
     }
   ],
   "author": {

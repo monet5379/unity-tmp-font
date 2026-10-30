@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- UPM Samples **Demo (Noto + Baked Atlas)** (`Samples~/DemoWithFonts`) — Noto SDF/TTF · Generated txt · Apply/Catalog · Import 후 **Noto 데모 경로 연결** 메뉴. 슬림 샘플 displayName을 **Demo (JSON + Warmup)** 으로 구분.
+
 ## [0.1.1] - 2026-10-30
 
 ### Fixed

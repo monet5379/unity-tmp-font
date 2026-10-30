@@ -44,7 +44,7 @@ https://github.com/monet5379/unity-tmp-font.git?path=/Packages/com.monet5379.tmp
 > [!NOTE]
 > **이 repo에서 확인 (선택)**
 >
-> - **개발용 repo:** `Assets/Project` · `Assets/Scenes` · `Assets/Editor` 놀이터 + `Assets/Addressables/JSON` · `Assets/Project/Font/Generated`. Package Manager에서 **Demo** 샘플 **Import는 하지 않아요** (Import JSON과 Addressables JSON이 겹치면 Extract 입력이 헷갈려요). 배포용 슬림 예시 정본은 `Samples~/Demo`이며, 소비 프로젝트는 [패키지 README — Samples](Packages/com.monet5379.tmp-font-pipeline/README.md#samples)를 따른다.
+> - **개발용 repo:** `Assets/Project` · `Assets/Scenes` · `Assets/Editor` 놀이터 + `Assets/Addressables/JSON` · `Assets/Project/Font/Generated`. Package Manager UPM 샘플 **Import는 하지 않아요** (Addressables JSON과 겹치면 Extract 입력이 헷갈려요). 소비 프로젝트는 [패키지 README — Samples](Packages/com.monet5379.tmp-font-pipeline/README.md#samples) — **Demo (JSON + Warmup)** 또는 **Demo (Noto + Baked Atlas)**.
 > - Unity로 **repo 루트**를 연다 → `Assets/Scenes/SampleScene` Play → 국기 버튼·key picker로 warmup·라벨을 확인해요.
 > - Demo 스크립트·씬·Editor 시드는 **패키지·설치 대상이 아니에요.** 런타임 Demo asmdef(`Assets/Project/Scripts/TmpFontPipeline.Demo.asmdef`)는 **`TmpFontPipeline.Runtime`** (`Packages/.../Runtime/TmpFontPipeline.Runtime.asmdef`)을 참조해요.
 > - Extract JSON/출력 폴더·Apply Active Profile은 창·`EditorPrefs`·프로필 에셋으로 **직접 지정**해요. 패키지에 Demo 기본 경로는 없어요.
@@ -107,7 +107,7 @@ Ui 버킷(`unique_chars_<Language>.txt`, Dialogue 접미사 없음) 추출 txt�
    - Apply 시 대상 atlas 크기를 `2048x2048`로 맞춘 뒤 bake해요.
 3. 대상 Font Asset의 Atlas Population Mode = **Static** 확인.
 
-**도움말** 탭은 추출 → 적용 단계 요약만 보여줘요 (Demo 시드 버튼 없음).
+**도움말** 탭은 추출 → 적용 단계 요약만 보여줘요 (이 repo용 **데모 에셋 생성** 버튼 없음; UPM Noto 샘플은 **샘플 → Noto 데모 경로 연결**).
 
 **이 repo — Demo 시드** (`Assets/Editor/DemoFontProfileBootstrap`):
 
@@ -128,7 +128,7 @@ Demo 매핑 (Create Demo Assets 후, 드래곤이즈데드 `Font_European` 패�
 
 **Font Role Catalog** (`Assets → Create → TMP 폰트 파이프라인 → 폰트 역할 카탈로그`) — `LanguageId` + `Ui` / `Dialogue` → `TMP_FontAsset`.
 
-이 repo에서는 **Create Demo Assets** 메뉴로 `Assets/Addressables/Scriptable/FontRoleCatalog`가 시드돼요. 소비 프로젝트는 자기 `FontRoleCatalog`를 만든다.
+이 repo에서는 **Create Demo Assets** 메뉴로 `Assets/Addressables/Scriptable/FontRoleCatalog`가 시드돼요. 소비 프로젝트는 Catalog를 직접 만들거나, **Demo (Noto + Baked Atlas)** 샘플 Import 후 **Noto 데모 경로 연결**로 `Settings/FontRoleCatalog`를 쓸 수 있어요 ([패키지 README — Samples](Packages/com.monet5379.tmp-font-pipeline/README.md#samples)).
 
 ## Runtime — 폰트 warmup
 

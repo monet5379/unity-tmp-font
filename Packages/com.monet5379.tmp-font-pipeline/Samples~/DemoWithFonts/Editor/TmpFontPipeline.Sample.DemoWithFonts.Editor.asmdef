@@ -1,0 +1,20 @@
+{
+    "name": "TmpFontPipeline.Sample.DemoWithFonts.Editor",
+    "rootNamespace": "TmpFontPipeline.Sample.DemoWithFonts.Editor",
+    "references": [
+        "TmpFontPipeline.Editor",
+        "TmpFontPipeline.Runtime",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

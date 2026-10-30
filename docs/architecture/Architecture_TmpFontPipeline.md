@@ -19,7 +19,8 @@ TMP Font Pipeline은 `Packages/com.monet5379.tmp-font-pipeline/` UPM 패키지�
 - **Extract:** `String*.json` → sanitize → 언어·Ui/Dialogue 버킷별 `unique_chars_*.txt`
 - **Apply:** Generated txt → `FontAtlasApplyProfile` 엔트리 → Static `TMP_FontAsset` Character Table bake (Editor Window)
 - **Warmup:** 역할별 sample text로 숨김 draw — **전 glyph 보장 아님**
-- UPM `Samples~/Demo` — JSON 예시 · `IFontWarmupTarget` 스크립트 (Import용)
+- UPM `Samples~/Demo` — JSON · `IFontWarmupTarget` (슬림 Import)
+- UPM `Samples~/DemoWithFonts` — Noto SDF · Generated · Apply/Catalog · 샘플 전용 경로 연결 메뉴
 - 이 repo `Assets/Project` · `Assets/Editor` · `Assets/Scenes` — Demo 스크립트·씬·시드; JSON·Static 폰트·Generated는 `Assets/Addressables` · `Assets/Project/Font` (**설치·복사 대상 아님**)
 
 ### 제외 범위 (Out of Scope)
@@ -37,7 +38,8 @@ TMP Font Pipeline은 `Packages/com.monet5379.tmp-font-pipeline/` UPM 패키지�
 | `Packages/.../Runtime/Atlas/` | (동일) | `FontAtlasApplyProfile`, `FontAtlasBucket`, `FontUsageRole`, `FontAtlasFileNames` — Extract→Apply 계약 |
 | `Packages/.../Runtime/Warmup/` | (동일) | `FontWarmupService`, `IFontWarmupTarget`, `FontRoleCatalog`, `FontWarmupSampleText` |
 | `Packages/.../Editor/` | `TmpFontPipeline.Editor` | 루트 asmdef. `UI/` · `Extract/` · `Apply/` (아래 레이아웃) |
-| `Packages/.../Samples~/Demo/` | `TmpFontPipeline.Sample.Demo` | 예시 JSON · `SampleFontWarmupTarget` — Package Manager **Import** |
+| `Packages/.../Samples~/Demo/` | `TmpFontPipeline.Sample.Demo` | 예시 JSON · `SampleFontWarmupTarget` — Package Manager **Import** (슬림) |
+| `Packages/.../Samples~/DemoWithFonts/` | `TmpFontPipeline.Sample.DemoWithFonts` (+ `.Editor`) | Noto · Generated · Settings · `SampleDemoWithFontsBootstrap` — **Import** (풀 데모 에셋) |
 | `Assets/Project/Scripts/` · `Assets/Editor/` | `TmpFontPipeline.Demo` · `TmpFontPipeline.Demo.Editor` | Demo 런타임 · `DemoFontProfileBootstrap`; JSON·Static SDF는 `Assets/Addressables`, Generated·Apply 프로필은 `Assets/Project/Font` — **비설치** · 샘플 **Import 안 함** |
 | `Assets/Scenes/` | (씬) | `SampleScene` — Demo Play |
 | `Assets/TextMesh Pro/` | (기본 어셈블리) | 개발 repo TMP Essentials — **패키지 밖** |
@@ -108,12 +110,12 @@ flowchart LR
 
 ## Demo vs Samples~
 
-| | `Samples~/Demo` (UPM Import) | 이 repo Demo (`Assets/Project` · `Assets/Editor` · `Assets/Scenes`) |
-| --- | --- | --- |
-| 목적 | 소비 프로젝트에 JSON·스크립트 예시 복사 | 놀이터 스크립트·씬; JSON·Static 폰트는 `Assets/Addressables`, Generated·Apply는 `Assets/Project/Font` |
-| Create Demo Assets | 없음 | `DemoFontProfileBootstrap` — 메뉴 **TMP 폰트 파이프라인 → 폰트 아틀라스 Apply 프로필 → 데모 에셋 생성** |
-| Extract 기본 경로 | Import 후 사용자 지정 | 이 repo: `Assets/Addressables/JSON` → `Assets/Project/Font/Generated` (`ProjectExtractPathDefaults` + EditorPrefs) |
-| Package Manager Import | 소비자 권장 | **개발 repo는 Import하지 않음** ([README NOTE](../../README.md)) |
+| | `Samples~/Demo` | `Samples~/DemoWithFonts` | 이 repo Demo |
+| --- | --- | --- | --- |
+| 목적 | JSON · Warmup 스크립트 | + Noto SDF · Generated · Apply/Catalog | 씬 · `DemoFontProfileBootstrap` |
+| 경로·프로필 | Import 후 사용자 지정 | **Noto 데모 경로 연결** | **데모 에셋 생성** |
+| Extract 예시 | `SampleData` | 동일 JSON · `Generated` 포함 · 유럽어 MergedEuropean txt | `Assets/Addressables/JSON` → `Assets/Project/Font/Generated` |
+| Package Manager Import | 소비자 (슬림) | 소비자 (E2E) | **Import 안 함** ([README NOTE](../../README.md)) |
 
 ## 불변조건과 주의점 (Invariants & Gotchas)
 
@@ -135,8 +137,9 @@ flowchart LR
 | Extract 버킷·sanitize·mandatory glyph·European mode | `Editor/Extract/`, `Editor/Extract/Json/`, README 출력 표 |
 | Apply bake 규칙 · Apply SO·파일명 계약 | `Runtime/Atlas/`, `Editor/Apply/`, `Editor/UI/` Apply 탭 |
 | Warmup 스케줄 | `Runtime/Warmup/`, `FontWarmupService`, `IFontWarmupTarget` |
-| Demo 시드 | `Assets/Editor/DemoFontProfileBootstrap` (패키지 밖) |
-| Samples | `Samples~/Demo` JSON·`SampleFontWarmupTarget` |
+| Demo 시드 (이 repo) | `Assets/Editor/DemoFontProfileBootstrap` |
+| Samples 시드 (UPM Import) | `Samples~/DemoWithFonts/Editor/SampleDemoWithFontsBootstrap` |
+| Samples 에셋·JSON | `Samples~/Demo` · `Samples~/DemoWithFonts` |
 | public API · asmdef 이름 | README 불변조건 · 이 문서 표 |
 
 구조·경계·public API·파이프라인 흐름을 바꾸면 이 파일을 갱신한다. 불변조건 문구가 바뀌면 **README를 먼저** 고친다.
